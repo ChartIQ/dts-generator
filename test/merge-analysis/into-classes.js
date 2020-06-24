@@ -20,6 +20,7 @@ describe('into-classes.js', () => {
         path: [ 'Some' ]
       },
     ];
+
     const members = [
       {
         area: {},
@@ -66,13 +67,16 @@ describe('into-classes.js', () => {
       expect(result[0].path).eql(['Some']);
       expect(result[1].path).eql(['Some']);
     });
+
     it('set correct class name', () => {
       expect(result[0].code.indexOf('class SomeClass {')).not.eql(-1);
     });
+
     it('set constcuctor propperly', () => {
       expect(result[0].code.indexOf('constructor(arg1: string, arg2: number)')).not.eql(-1);
       expect(result[0].code.indexOf('constructor(arg1: string, arg2: number):')).eql(-1);
     });
+
     it('set all members in class', () => {
       expect(result[0].code.indexOf('public static Foo(arg1: string, arg2: number): number')).not.eql(-1);
       expect(result[0].code.indexOf('private data: number')).not.eql(-1);

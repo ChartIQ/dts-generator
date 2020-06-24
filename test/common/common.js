@@ -12,6 +12,7 @@ describe('common.js', () => {
 
       expect(result).eql(target);
     });
+
     it('shift multiline string with second param', () => {
       const source = 'str1\nstr2\nstr3';
       const target = 'aastr1\naastr2\naastr3';
@@ -24,6 +25,7 @@ describe('common.js', () => {
 
   describe('cleanCommentData', () => {
     const { cleanCommentData } = require('../../src/common/common.js');
+
 
     it('follow the comment structure', () => {
       const source =
@@ -41,6 +43,7 @@ describe('common.js', () => {
 
       expect(result).eql(target);
     });
+
     it('clean @param type', () => {
       const source =
 `/**
@@ -57,6 +60,7 @@ describe('common.js', () => {
 
       expect(result).eql(target);
     });
+
     it('clean @return and @returns type', () => {
       const source =
 `/**
@@ -75,6 +79,7 @@ describe('common.js', () => {
 
       expect(result).eql(target);
     });
+
     it('remove @desc tag', () => {
       const source =
 `/**
@@ -89,6 +94,7 @@ describe('common.js', () => {
 
       expect(result).eql(target);
     });
+
     it('skip @memberof tag line', () => {
       const source =
 `/**
@@ -105,6 +111,7 @@ describe('common.js', () => {
 
       expect(result).eql(target);
     });
+
     it('skip @name tag line', () => {
       const source =
 `/**

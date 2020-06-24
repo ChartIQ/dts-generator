@@ -23,6 +23,7 @@ describe('members-parser.js', () => {
       expect(result[0].path).eql(['Foo', 'Bar']);
       expect(result[0].name).eql('field');
     });
+
     it('create property definition as a property with all required data', () => {
       const source = [
         {
@@ -43,7 +44,8 @@ describe('members-parser.js', () => {
       expect(result[0].path).eql(['Foo', 'Bar']);
       expect(result[0].name).eql('field');
     });
-    it('create function with all arrtubutes and return', () => {
+
+    it('create function with all attributes and return', () => {
       const source = [
         {
           startCommentPos: 1,
@@ -97,6 +99,7 @@ describe('members-parser.js', () => {
       expect(result[0].path).eql(['AnyType']);
       expect(result[0].TSDef).eql(['constructor()']);
     });
+
     it('contain all attributes and types', () => {
       const source = [
         {

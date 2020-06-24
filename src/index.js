@@ -128,9 +128,9 @@ function generate(dataFrom, config = defaultConfig) {
 
   // Convert the data into something that could be used as a defenition
   const members = createMembersTSDefs(notedObjects.members);
-  const constructors = createConstructorsTSDefs(notedObjects.nameds);
-  const namespaces = createNamespacesTSDefs(notedObjects.nameds);
-  const classes = createClassesTSDefs(notedObjects.nameds);
+  const constructors = createConstructorsTSDefs(notedObjects.names);
+  const namespaces = createNamespacesTSDefs(notedObjects.names);
+  const classes = createClassesTSDefs(notedObjects.names);
   const types = createTypedefsTSDefs(notedObjects.types);
   const callbacks = createCallbacksTSDefs(notedObjects.types);
   const module = createModuleTSDefs(notedObjects.module, config.importTagName);

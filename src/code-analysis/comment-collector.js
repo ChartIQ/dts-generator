@@ -16,7 +16,7 @@ module.exports = {
  */
 function collectAllNotedObjects(data) {
   // Collect all namespaces into collection
-  const nameds = classifyNamedObjects(getCommentAreas(data, '* @name '));
+  const names = classifyNamedObjects(getCommentAreas(data, '* @name '));
 
   // Collect all callback, typedef
   const types = [
@@ -36,7 +36,7 @@ function collectAllNotedObjects(data) {
   const module = getCommentAreas(data, '* @module');
 
   return {
-    nameds,
+    names,
     types,
     members,
     module,
@@ -83,12 +83,12 @@ function getCommentAreas(data, tag, extention = {}, isDefinitionRequired = true)
 }
 
 /**
- * @param {Area[]} nameds
+ * @param {Area[]} names
  */
-function classifyNamedObjects(nameds) {
+function classifyNamedObjects(names) {
   const result = [];
 
-  for (const named of nameds) {
+  for (const named of names) {
     // if (named.comment.includes(' @namespace')) {
     //   result.push({ ...named, type: 'namespace' });
     // }
@@ -129,7 +129,7 @@ function applyMemberRoles(members, data) {
       _member.modifiers.push('static');
     }
 
-    if (member.definition.includes('function')) {
+    if (/(\(.*\)\s*=>)|(function)/.test(member.definition)) {
       _member.type = 'method';
     } else {
       _member.type = 'field';
