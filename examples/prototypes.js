@@ -9,16 +9,16 @@ function Simple() {}
  * @type {boolean}
  * @memberof Simple#
  */
-Simple.prototype.foo = true
+Simple.prototype.foo = true;
 
 /**
  * Sample method that can be called by our class. 
  * Completely contrived but shows arrow function and default argument
  * @param {*} required A necessary first argument
- * @param {string} [param.optional = string]
+ * @param {string} [optional = string]
  * @memberof Simple#
  */
 Simple.prototype.check = (required, optional='nice to have') => {
     if(!required) throw new Error('required param is required!')
     console.log(optional)
-}
+};

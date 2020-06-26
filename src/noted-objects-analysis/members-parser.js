@@ -12,6 +12,21 @@ module.exports = {
  * @typedef {import('../common/interfaces').Definition} Definition
  */
 
+/**
+ * Regex that the will test if an expression is a function, arrow function, or function in class declaration.
+ * Used to determine whether an expression is a function
+ *
+ * **NOTE** Will not detect  inline arrow functions
+ * @type {RegExp}
+ */
+const isFunction = new RegExp(/(\(.*\)\s*\s*{)|(\(.*\)\s*\s*=>)/);
+
+/**
+ * Regex that the will test if an expression is a named function.
+ * @type {RegExp}
+ */
+const namedFunction = new RegExp(/\w*(?=\s*\()/);
+
 /* Public */
 /**
  * Created TS code lines for each member
@@ -92,10 +107,12 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     name = 'constructor';
     value = definition.substring(definition.indexOf('=') + 1);
   } else
+  // If in an object? Probably Object.defineProperty or object.definePropertie
   if (firstLine.indexOf(':') > -1 && (firstLine.indexOf('{') === -1 || firstLine.indexOf('{') > firstLine.indexOf(':'))) {
     name = firstLine.substring(0, firstLine.indexOf(':')).trim();
     value = definition.substring(definition.indexOf(':') + 1);
   } else
+  // If setting value equal to function
   if (firstLine.indexOf('=') > -1) {
     name = firstLine.substring(
       firstLine.lastIndexOf('.', firstLine.indexOf('=')) + 1,
@@ -106,11 +123,19 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
   let tail = ''
   const func = getFunc(firstLine);
-  if (typeof func === 'string') {
-    const args = func.split(',').map(f => f.trim()).filter(v => v);
+  if(isFunction.test(firstLine)) {
+    const all  = getArguments(firstLine);
+    const args = all.split(',')
+      .map(a => a.includes('=') ? a.substring(0, a.indexOf('=')).trim() : a.trim())
+      .filter(v => v);
+
     const types = getParams(comment);
-    const params = args.map(arg => types[arg] ? `${types[arg].name}${types[arg].opt ? '?' : ''}: ${types[arg].type}` : `${arg}: any`);
+    const params = args.map(arg => {
+      return types[arg] ? `${types[arg].name}${types[arg].opt ? '?' : ''}: ${types[arg].type}` : `${arg}: any`
+    });
     const returns = getReturns(comment);
+
+    if(!name.length && !types.length) name = namedFunction.exec(firstLine)[0];
 
     tail = `(${params.join(', ')})`;
 
@@ -142,6 +167,10 @@ function getFunc(firstLine) {
   return false
 }
 
+function getArguments(expression) {
+  return expression.substring(expression.indexOf('(')+1, expression.indexOf(')'));
+}
+
 /**
  * @param {string} comment
  * @returns {{[x: string]: {type: string, name: string, opt: boolean}}}
@@ -160,6 +189,25 @@ function getParams(comment) {
   while ((pos = comment.indexOf('@param', pos + 1)) > -1) {
     const paramStr = comment.substring(pos, comment.indexOf('\n', pos));
     const deconstruction = /\{(.*?:)?(.*?)\}\s*([A-z0-9\_\.]+)/g.exec(paramStr);
+    const alternate = new RegExp(/\{(.*?)\}\s*((\w*\b)|(\[.*\]))/).exec(paramStr);
+    if(!alternate) continue;
+
+    if(alternate.length) {
+      let type = fixType(alternate[1].trim());
+      let name = !!alternate[3] ? alternate[3] : alternate[4].match(/^\[\s?([A-z\_]+)/)[1];
+      let opt = !!alternate[4] || name.includes('=');
+
+      let structure = {
+        type,
+        name, 
+        opt
+      };
+
+      params.push(structure);
+      result[name] = structure;
+    } else {
+      // @TODO push to debugging to let developer know about misformed JSDoc comment
+    }
 
     if (deconstruction && deconstruction.length === 4) {
       let type = fixType(deconstruction[2].trim());
@@ -177,10 +225,10 @@ function getParams(comment) {
         opt,
       };
 
-      params.push(el);
-      if (name.includes('.') === false) {
-        result[name] = el;
-      }
+      // params.push(el);
+      // if (name.includes('.') === false) {
+      //   result[name] = el;
+      // }
     }
   }
 
@@ -203,6 +251,15 @@ function getParams(comment) {
 
   return result;
 }
+
+/**
+ * Used to check whether or not a type definition includes an optional or default type.
+ * @param {string} check Section of JSDoc comment to check. Should either be the type annotation or name.
+ * @see https://jsdoc.app/tags-type.html
+ */
+function isOptional(check) {
+  return check.includes('=') || check.includes('[');
+};
 
 /**
  * @param {string} comment

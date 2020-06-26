@@ -115,6 +115,9 @@ function fixType(type) {
   case type.toLowerCase() === 'array':
     return 'any[]';
 
+  case type === '*':
+    return 'any';
+
   default:
     return type;
   }

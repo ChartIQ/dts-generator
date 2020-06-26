@@ -129,7 +129,8 @@ function applyMemberRoles(members, data) {
       _member.modifiers.push('static');
     }
 
-    if (/(\(.*\)\s*=>)|(function)/.test(member.definition)) {
+    // (\(.*\)\s*=>)|\b\s*\(\s*\)|(function)
+    if (/(\(.*\)\s*\s*{)|(\(.*\)\s*\s*=>)/.test(member.definition)) {
       _member.type = 'method';
     } else {
       _member.type = 'field';
