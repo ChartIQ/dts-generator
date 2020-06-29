@@ -80,7 +80,9 @@ function cleanCommentData(comment, skipAdditional = []) {
  * @returns {string}
  */
 function fixType(type) {
-  type = type.replace('~', '.prototype.').replace('#', '.prototype.');
+  type = type.replace('~', '.prototype.')
+    .replace('#', '.prototype.')
+    .replace('external:', '');
 
   switch (true) {
   case type.toLowerCase() === 'function':
