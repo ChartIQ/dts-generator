@@ -20,8 +20,8 @@ const AnyType = function(){};
       expect(result.members.length).eql(0);
       expect(result.names[0].value).eql('AnyType');
       expect(result.names[1].value).eql('AnyType');
-      expect(result.names[0].definition).eql('const AnyType = function(){}');
-      expect(result.names[1].definition).eql('const AnyType = function(){}');
+      expect(result.names[0].definition).eql('const AnyType = function()');
+      expect(result.names[1].definition).eql('const AnyType = function()');
       expect(result.names.find(v => v.type === 'namespace')).not.eql(undefined);
       expect(result.names.find(v => v.type === 'class')).not.eql(undefined);
     });
@@ -87,7 +87,7 @@ Foo.Bar.method = function(arg1, arg2) {};
       expect(result.members[0].value).eql('Foo.Bar');
       expect(result.members[0].type).eql('method');
       expect(result.members[0].modifiers).eql(['public', 'static']);
-      expect(result.members[0].definition).eql('Foo.Bar.method = function(arg1, arg2) {}');
+      expect(result.members[0].definition).eql('Foo.Bar.method = function(arg1, arg2)');
     });
 
     it('create class methods from arrow functions', ()=> {
@@ -110,7 +110,7 @@ Foo.Bar.method = (arg1, arg2) => {};
       expect(result.members[0].value).eql('Foo.Bar');
       expect(result.members[0].type).eql('method');
       expect(result.members[0].modifiers).eql(['public', 'static']);
-      expect(result.members[0].definition).eql('Foo.Bar.method = (arg1, arg2) => {}');
+      expect(result.members[0].definition).eql('Foo.Bar.method = (arg1, arg2)');
     })
 
     it('create class propeties with data', () => {

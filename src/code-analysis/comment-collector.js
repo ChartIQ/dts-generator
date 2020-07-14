@@ -3,6 +3,8 @@ module.exports = {
   collectAllNotedObjects,
 };
 
+const { getDefinition } = require('../common/common');
+
 /**
  * @typedef {import('../common/interfaces').Area} Area
  * @typedef {import('../common/interfaces').NotedObjects} NotedObjects
@@ -64,7 +66,7 @@ function getCommentAreas(data, tag, extention = {}, isDefinitionRequired = true)
     const endCommentPos = data.indexOf('*/', pos) + 2;
     const comment = data.substring(startCommentPos, endCommentPos);
     const value = data.substring(pos + tag.length, data.indexOf('\n', pos)).trim();
-    const definition = data.substring(endCommentPos + 1, data.indexOf(';\n', endCommentPos + 1)).trim();
+    const definition = getDefinition(data.substring(endCommentPos + 1)).match;
 
     const area = {
       startCommentPos,
@@ -130,7 +132,7 @@ function applyMemberRoles(members, data) {
     }
 
     // (\(.*\)\s*=>)|\b\s*\(\s*\)|(function)
-    if (/(\(.*\)\s*\s*{)|(\(.*\)\s*\s*=>)/.test(member.definition)) {
+    if (/(\(.*\))|(\(.*\)\s*\s*=>)/.test(member.definition)) {
       _member.type = 'method';
     } else {
       _member.type = 'field';

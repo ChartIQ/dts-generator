@@ -3,6 +3,7 @@ module.exports = {
   tabLines,
   cleanCommentData,
   fixType,
+  getDefinition
 }
 
 /* Public */
@@ -123,4 +124,19 @@ function fixType(type) {
   default:
     return type;
   }
+}
+
+/**
+ * Gets definition part either variable assignment or method
+ * @param {string} content
+ * @returns {string}
+ */
+function getDefinition(content) {
+  const re = /(\s\S)?[^;{]*/;
+  let [match] = content.match(re);
+  const isFunction = match && /(\bfunction\b|=>)/.test(match);
+  if (match) {
+      match = match.trim().replace(/\s*=>\s*$/,'');
+  }
+  return { match, isFunction }
 }

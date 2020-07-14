@@ -225,4 +225,62 @@ describe('common.js', () => {
       expect(result).eql(target);
     });
   });
+
+  describe('getDefinition', () => {
+    const { getDefinition } = require('../../src/common/common.js');
+    const testCases = [
+      {
+        name: 'should process function expression assignment',
+        input: `
+        transformedPriceFromPixel = function (
+          y,
+          panel,
+          yAxis
+        ) {
+          const k = 1;
+        `,
+        match: `transformedPriceFromPixel = function (
+          y,
+          panel,
+          yAxis
+        )`,
+        isFunction: true
+      },
+      {
+        name: 'should process arrow function assignment',
+        input: `Simple.prototype.check = (required, optional='nice to have') => {
+          if(!required) throw new Error('required param is required!')
+        `,
+        match: `Simple.prototype.check = (required, optional='nice to have')`,
+        isFunction: true
+      },
+      {
+        name: 'simple property assignment',
+        input: `CIQ.iphone = userAgent.indexOf("iPhone") != -1;`,
+        match: `CIQ.iphone = userAgent.indexOf("iPhone") != -1`,
+        isFunction: false
+      },
+      {
+        name: 'complex property assignment',
+        input: `
+        CIQ.ipad =
+          userAgent.indexOf("iPad") != -1 /* iOS pre 13 */ ||
+          (nav.platform === "MacIntel" && nav.maxTouchPoints > 1);
+          const k = 1;
+        `,
+        match: `CIQ.ipad =
+          userAgent.indexOf("iPad") != -1 /* iOS pre 13 */ ||
+          (nav.platform === "MacIntel" && nav.maxTouchPoints > 1)`,
+        isFunction: false
+      }
+    ];
+
+    testCases.forEach(({ name, input, match, isFunction }) => {
+      it(name, () => {
+        const result = getDefinition(input);
+        expect(result.match).equal(match);
+        expect(result.isFunction).equal(isFunction);
+      });
+    });
+  });
 });
