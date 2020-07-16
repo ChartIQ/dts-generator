@@ -212,7 +212,11 @@ function getParams(comment) {
     const { type, isOptional, name, defaultValue } = getParamParts(paramStr);
 
     if (type) {
-      const el = { type, name, opt: isOptional };
+      const el = { 
+        type: fixType(type),
+        name,
+        opt: isOptional
+      };
       params.push(el);
       if (name.includes('.') === false) {
         result[name] = el;
