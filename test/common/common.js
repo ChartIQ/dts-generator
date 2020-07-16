@@ -306,6 +306,12 @@ describe('common.js', () => {
         input: '@param {Foo.Bar} [config.bar=200] Some config object',
         expected: { type: 'Foo.Bar', isOptional: true, name: 'config.bar', defaultValue: '200' },
       },
+      {
+        name: 'should not crash on misonfigured parameter',
+        input: '@param ///',
+        expected: { type: undefined, isOptional: false, name: undefined, defaultValue: '' },
+      },
+      
     ];
 
     testCases.forEach(({ name, input, expected }) => {

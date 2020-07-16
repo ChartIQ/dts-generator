@@ -163,6 +163,6 @@ function getParamParts(content) {
   }
   const re = new RegExp(d.type + d.optional + d.name + d.defaultValue);
 
-  [, type, optional, name, , value ] = re.exec(content);
+  const [, type, optional, name, , value ] = re.exec(content) || [];
   return { type, isOptional: !!optional, name, defaultValue: optional ? value : '' };
 }
