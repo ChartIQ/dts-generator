@@ -239,11 +239,7 @@ describe('common.js', () => {
         ) {
           const k = 1;
         `,
-        match: `transformedPriceFromPixel = function (
-          y,
-          panel,
-          yAxis
-        )`,
+        match: `transformedPriceFromPixel = function (y, panel, yAxis)`,
         isFunction: true
       },
       {
@@ -268,9 +264,7 @@ describe('common.js', () => {
           (nav.platform === "MacIntel" && nav.maxTouchPoints > 1);
           const k = 1;
         `,
-        match: `CIQ.ipad =
-          userAgent.indexOf("iPad") != -1 /* iOS pre 13 */ ||
-          (nav.platform === "MacIntel" && nav.maxTouchPoints > 1)`,
+        match: `CIQ.ipad = userAgent.indexOf("iPad") != -1 /* iOS pre 13 */ || (nav.platform === "MacIntel" && nav.maxTouchPoints > 1)`,
         isFunction: false
       }
     ];
@@ -280,6 +274,44 @@ describe('common.js', () => {
         const result = getDefinition(input);
         expect(result.match).equal(match);
         expect(result.isFunction).equal(isFunction);
+      });
+    });
+  });
+
+  describe('getParts', () => {
+    const { getParamParts } = require('../../src/common/common.js');
+    const testCases = [
+      {
+        name: 'should process required parameter',
+        input: '@param {object} config Some config object',
+        expected: { type: 'object', isOptional: false, name: 'config', defaultValue: '' },
+      },
+      {
+        name: 'should process complex required parameter',
+        input: '@param {Foo.Bar} config.bar Some config object',
+        expected: { type: 'Foo.Bar', isOptional: false, name: 'config.bar', defaultValue: '' },
+      },
+      {
+        name: 'should process optional parameter',
+        input: '@param {object} [x] X value',
+        expected: { type: 'object', isOptional: true, name: 'x', defaultValue: '' },
+      },
+      {
+        name: 'should process complex optional parameter',
+        input: '@param {Foo.Bar} [config.bar] Some config object',
+        expected: { type: 'Foo.Bar', isOptional: true, name: 'config.bar', defaultValue: '' },
+      },
+      {
+        name: 'should process complex optional parameter with default value',
+        input: '@param {Foo.Bar} [config.bar=200] Some config object',
+        expected: { type: 'Foo.Bar', isOptional: true, name: 'config.bar', defaultValue: '200' },
+      },
+    ];
+
+    testCases.forEach(({ name, input, expected }) => {
+      it(name, () => {
+        const result = getParamParts(input);
+        expect(result).eql(expected);
       });
     });
   });

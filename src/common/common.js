@@ -3,7 +3,8 @@ module.exports = {
   tabLines,
   cleanCommentData,
   fixType,
-  getDefinition
+  getDefinition,
+  getParamParts
 }
 
 /* Public */
@@ -136,7 +137,32 @@ function getDefinition(content) {
   let [match] = content.match(re);
   const isFunction = match && /(\bfunction\b|=>)/.test(match);
   if (match) {
-      match = match.trim().replace(/\s*=>\s*$/,'');
+      match = match
+        .trim()
+        .replace(/\s*=>\s*$/,'')
+        .replace(/\n|\n\r/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .replace(/\( /g, '(')
+        .replace(/ \)/g, ')')
+        ;
   }
   return { match, isFunction }
+}
+
+/**
+ * Given JSDoc parameter string extract parameter type, name, isOptional and defaultValue
+ * @param {string} content
+ * @returns {string}
+ */
+function getParamParts(content) {
+  const d = { // RegEx definition parts
+    type: '\\{(.*?)\\}',
+    optional: '\\s*(\\[?)\\s*',
+    name: '([\\w\\.]*)',
+    defaultValue: '\\s*(\\=?)\\s*([^\\]]*)'
+  }
+  const re = new RegExp(d.type + d.optional + d.name + d.defaultValue);
+
+  [, type, optional, name, , value ] = re.exec(content);
+  return { type, isOptional: !!optional, name, defaultValue: optional ? value : '' };
 }

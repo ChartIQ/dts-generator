@@ -1,5 +1,5 @@
-const { groupBy, set } = require('lodash');
-const { fixType, cleanCommentData } = require('../common/common');
+const { groupBy, set, get } = require('lodash');
+const { fixType, cleanCommentData, getParamParts } = require('../common/common');
 
 /* Definition */
 module.exports = {
@@ -19,7 +19,10 @@ module.exports = {
  * **NOTE** Will not detect  inline arrow functions
  * @type {RegExp}
  */
-const isFunction = new RegExp(/(\(.*\)\s*\s*{)|(\(.*\)\s*\s*=>)/);
+const aClassMethod = '(^\\s*\\w*\\s*\\()';
+const aFunction = '(function\\s*\\(.*\\))';
+const anArrowFunction = '(\\(.*\\)\\s*\\s*=>)';
+const isFunction = new RegExp(`${aClassMethod}|${aFunction}|${anArrowFunction}`);
 
 /**
  * Regex that the will test if an expression is a named function.
@@ -123,21 +126,24 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
   let tail = ''
   const func = getFunc(firstLine);
-  if(isFunction.test(firstLine)) {
+  if(constructor || isFunction.test(firstLine)) {
     const all  = getArguments(firstLine);
     const args = all.split(',')
       .map(a => a.includes('=') ? a.substring(0, a.indexOf('=')).trim() : a.trim())
       .filter(v => v);
 
     const types = getParams(comment);
-    const params = args.map(arg => {
-      return types[arg] ? `${types[arg].name}${types[arg].opt ? '?' : ''}: ${types[arg].type}` : `${arg}: any`
-    });
+    const params = args.reduce((acc, arg) => {
+      const name = types[arg] ? `${types[arg].name}${types[arg].opt ? '?' : ''}` : arg;
+      const value = types[arg] ? types[arg].type : 'any';
+      return {...acc, [name]: value };
+    }, {});
     const returns = getReturns(comment);
 
     if(!name.length && !types.length) name = namedFunction.exec(firstLine)[0];
 
-    tail = `(${params.join(', ')})`;
+    const paramStr = Object.keys(params).length ? JSON.stringify(params) : '';
+    tail = `(${outputParams(params)})`;
 
     if (constructor === false) {
       tail += `: ${returns}`;
@@ -151,6 +157,21 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   }
 
   return { TSDef: [`${modifiers.join(' ')} ${name}${tail}`.trim()], name };
+
+  function outputParams(params) {
+    let paramStr = Object.keys(params).length ? JSON.stringify(params) : '';
+    if (paramStr.length > 80) {
+      paramStr = JSON.stringify(params, null, 2);
+    }
+    else {
+      paramStr = paramStr.replace(/(\:|,)/g, '$1 ');
+    }
+    paramStr = paramStr
+      .substring(1, paramStr.length - 2)
+      .replace(/"/g, '');
+    
+    return paramStr;
+  }
 }
 
 /**
@@ -188,47 +209,14 @@ function getParams(comment) {
   let pos = -1
   while ((pos = comment.indexOf('@param', pos + 1)) > -1) {
     const paramStr = comment.substring(pos, comment.indexOf('\n', pos));
-    const deconstruction = /\{(.*?:)?(.*?)\}\s*([A-z0-9\_\.]+)/g.exec(paramStr);
-    const alternate = new RegExp(/\{(.*?)\}\s*((\w*\b)|(\[.*\]))/).exec(paramStr);
-    if(!alternate) continue;
+    const { type, isOptional, name, defaultValue } = getParamParts(paramStr);
 
-    if(alternate.length) {
-      let type = fixType(alternate[1].trim());
-      let name = !!alternate[3] ? alternate[3] : alternate[4].match(/^\[\s?([A-z\_]+)/)[1];
-      let opt = !!alternate[4] || name.includes('=');
-
-      let structure = {
-        type,
-        name, 
-        opt
-      };
-
-      params.push(structure);
-      result[name] = structure;
-    } else {
-      // @TODO push to debugging to let developer know about misformed JSDoc comment
-    }
-
-    if (deconstruction && deconstruction.length === 4) {
-      let type = fixType(deconstruction[2].trim());
-      let name = deconstruction[3].trim();
-      let opt = false;
-
-      if (name[0] === '[') {
-        name = name.substr(1, name.length - 2);
-        opt = true;
+    if (type) {
+      const el = { type, name, opt: isOptional };
+      params.push(el);
+      if (name.includes('.') === false) {
+        result[name] = el;
       }
-
-      const el = {
-        type,
-        name,
-        opt,
-      };
-
-      // params.push(el);
-      // if (name.includes('.') === false) {
-      //   result[name] = el;
-      // }
     }
   }
 
@@ -242,11 +230,27 @@ function getParams(comment) {
     const nodes = parented[name];
 
     const type = {};
+    
     for (const node of nodes) {
-      set(type, node.name.substring(name.length + 1) + (node.opt ? '?' : ''), node.type);
+      set(type, node.name, node.type);
     }
-    const stype = JSON.stringify(type).replace(/\"/g, '').replace(/:/g, ': ');
-    result[name].type = stype;
+    
+    const reParentChild = /(.*)(\.)([^.]*$)/;
+   
+    // Update optional keys
+    const removeUpdated = [];
+    nodes
+      .filter(({ opt }) => opt) 
+      .forEach((node) => {
+        const [, parentPath, , key] = reParentChild.exec(node.name);
+        const parentObj = get(type, parentPath);
+        parentObj[key + '?'] = parentObj[key];
+        removeUpdated.push([parentObj, key]);
+      });
+    removeUpdated.forEach(([obj, key]) => { delete obj[key]; });
+
+    // const stype = JSON.stringify(type[name], null, '\t').replace(/\"/g, '');
+    result[name].type = type[name];
   }
 
   return result;

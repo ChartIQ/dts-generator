@@ -89,6 +89,63 @@ Foo.Bar.method = function(arg1, arg2) {};
       expect(result.members[0].modifiers).eql(['public', 'static']);
       expect(result.members[0].definition).eql('Foo.Bar.method = function(arg1, arg2)');
     });
+    
+    it('create class methods for multiline definitions', () => {
+      const source =
+`
+/**
+ * @memberof Foo.Bar
+ * @param {string} arg1
+ * @param {number} arg2
+ */
+Foo.Bar.method =
+  Foo.Bar.method || 
+    function(arg1, arg2) {
+
+  };
+`;
+
+      const result = collectAllNotedObjects(source);
+
+      expect(result.names.length).eql(0);
+      expect(result.types.length).eql(0);
+      expect(result.members.length).eql(1);
+      expect(result.members[0].value).eql('Foo.Bar');
+      expect(result.members[0].type).eql('method');
+      expect(result.members[0].modifiers).eql(['public', 'static']);
+      expect(result.members[0].definition).eql(
+        'Foo.Bar.method = Foo.Bar.method || function(arg1, arg2)'
+      );
+    });
+    
+    it('create class methods for multiline parameter signatures', () => {
+      const source =
+`
+/**
+ * @memberof Foo.Bar
+ * @param {string} arg1
+ * @param {number} arg2
+ */
+Foo.Bar.method = function(
+  arg1,
+  arg2
+  ) {
+
+  };
+`;
+
+      const result = collectAllNotedObjects(source);
+
+      expect(result.names.length).eql(0);
+      expect(result.types.length).eql(0);
+      expect(result.members.length).eql(1);
+      expect(result.members[0].value).eql('Foo.Bar');
+      expect(result.members[0].type).eql('method');
+      expect(result.members[0].modifiers).eql(['public', 'static']);
+      expect(result.members[0].definition).eql(
+        'Foo.Bar.method = function(arg1, arg2)'
+      );
+    });
 
     it('create class methods from arrow functions', ()=> {
       const source =
