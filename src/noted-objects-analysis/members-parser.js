@@ -159,7 +159,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
   function outputParams(params) {
     let paramStr = Object.keys(params).length ? JSON.stringify(params) : '';
-    if (paramStr.length > 80) {
+    if (paramStr.length > 60) {
       paramStr = JSON.stringify(params, null, 2);
     }
     else {
