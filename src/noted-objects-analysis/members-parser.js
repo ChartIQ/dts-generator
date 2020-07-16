@@ -142,7 +142,6 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
     if(!name.length && !types.length) name = namedFunction.exec(firstLine)[0];
 
-    const paramStr = Object.keys(params).length ? JSON.stringify(params) : '';
     tail = `(${outputParams(params)})`;
 
     if (constructor === false) {
@@ -166,9 +165,8 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     else {
       paramStr = paramStr.replace(/(\:|,)/g, '$1 ');
     }
-    paramStr = paramStr
-      .substring(1, paramStr.length - 2)
-      .replace(/"/g, '');
+    paramStr = paramStr.replace(/"/g, '');
+    paramStr = paramStr.substring(1, paramStr.length - 1);
     
     return paramStr;
   }
