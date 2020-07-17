@@ -247,7 +247,7 @@ describe('common.js', () => {
         input: `Simple.prototype.check = (required, optional='nice to have') => {
           if(!required) throw new Error('required param is required!')
         `,
-        match: `Simple.prototype.check = (required, optional='nice to have')`,
+        match: `Simple.prototype.check = (required, optional='nice to have') =>`,
         isFunction: true
       },
       {

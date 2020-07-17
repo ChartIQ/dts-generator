@@ -167,7 +167,7 @@ Foo.Bar.method = (arg1, arg2) => {};
       expect(result.members[0].value).eql('Foo.Bar');
       expect(result.members[0].type).eql('method');
       expect(result.members[0].modifiers).eql(['public', 'static']);
-      expect(result.members[0].definition).eql('Foo.Bar.method = (arg1, arg2)');
+      expect(result.members[0].definition).eql('Foo.Bar.method = (arg1, arg2) =>');
     })
 
     it('create class propeties with data', () => {

@@ -139,7 +139,6 @@ function getDefinition(content) {
   if (match) {
       match = match
         .trim()
-        .replace(/\s*=>\s*$/,'')
         .replace(/\n|\n\r/g, '')
         .replace(/\s{2,}/g, ' ')
         .replace(/\( /g, '(')
