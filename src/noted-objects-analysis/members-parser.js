@@ -19,7 +19,7 @@ module.exports = {
  * **NOTE** Will not detect  inline arrow functions
  * @type {RegExp}
  */
-const aClassMethod = '(^\\s*\\w*\\s*\\()';
+const aClassMethod = '(^\\s*(?!if\\s)\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"
 const aFunction = '(function\\s*\\(.*\\))';
 const anArrowFunction = '(\\(.*\\)\\s*\\s*=>)';
 const isFunction = new RegExp(`${aClassMethod}|${aFunction}|${anArrowFunction}`);
@@ -116,12 +116,12 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     value = definition.substring(definition.indexOf(':') + 1);
   } else
   // If setting value equal to function
-  if (firstLine.indexOf('=') > -1) {
+  if (firstLine.lastIndexOf('=') > -1) {
     name = firstLine.substring(
-      firstLine.lastIndexOf('.', firstLine.indexOf('=')) + 1,
-      firstLine.indexOf('='),
+      firstLine.lastIndexOf('.', firstLine.lastIndexOf('=')) + 1,
+      firstLine.lastIndexOf('='),
     ).trim();
-    value = definition.substring(definition.indexOf('=') + 1);
+    value = definition.substring(definition.lastIndexOf('=') + 1);
   }
 
   let tail = ''
