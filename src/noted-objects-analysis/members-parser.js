@@ -116,12 +116,12 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     value = definition.substring(definition.indexOf(':') + 1);
   } else
   // If setting value equal to function
-  if (firstLine.lastIndexOf('=') > -1) {
+  if (firstLine.indexOf('=') > -1) {
     name = firstLine.substring(
-      firstLine.lastIndexOf('.', firstLine.lastIndexOf('=')) + 1,
-      firstLine.lastIndexOf('='),
+      firstLine.indexOf('.', firstLine.indexOf('=')) + 1,
+      firstLine.indexOf('='),
     ).trim();
-    value = definition.substring(definition.lastIndexOf('=') + 1);
+    value = definition.substring(definition.indexOf('=') + 1);
   }
 
   let tail = ''
