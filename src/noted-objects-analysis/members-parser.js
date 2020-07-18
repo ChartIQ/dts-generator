@@ -118,7 +118,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   // If setting value equal to function
   if (firstLine.indexOf('=') > -1) {
     name = firstLine.substring(
-      firstLine.indexOf('.', firstLine.indexOf('=')) + 1,
+      firstLine.lastIndexOf('.', firstLine.indexOf('=')) + 1,
       firstLine.indexOf('='),
     ).trim();
     value = definition.substring(definition.indexOf('=') + 1);
