@@ -127,7 +127,8 @@ function applyMemberRoles(members, data) {
     if (
       member.definition.includes('.prototype.') === false &&
       member.value.includes('.prototype') === false &&
-      member.value[member.value.length - 1] !== '#'
+      member.value[member.value.length - 1] !== '#' &&
+      !member.comment.includes(' @instance')
     ) {
       _member.modifiers.push('static');
     }
