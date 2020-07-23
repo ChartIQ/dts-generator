@@ -139,9 +139,41 @@ function generate(dataFrom, config = defaultConfig) {
   const classDefs = intoClasses(classes, [...constructors, ...members]);
   const typeDefs = intoTypedefs(types);
   const callbacksDefs = intoCallbacks(callbacks);
-  const namespaceDefs = intoNamespaces(namespaces, [...typeDefs, ...callbacksDefs, ...classDefs]);
+  const namespaceDefs = intoNamespaces(namespaces, [
+    ...typeDefs,
+    ...callbacksDefs,
+    ...classDefs,
+    ...classStaticMembersToNamespaceFunctions(members)
+  ]);
   const moduleDefs = intoModules(module, namespaceDefs);
 
   // Join all into one TS declarations file and save it
   return moduleDefs.map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
+}
+
+/**
+ * @typedef {import('../common/interfaces').Definition} Definition
+ */
+
+/**
+ * 
+ * @param {Definition[]} members 
+ * @return {Definition[]}
+ */
+function classStaticMembersToNamespaceFunctions(members) {
+  return members
+    .filter(member => /^public static /.test(member.TSDef[0]))
+    .map((member) => {
+      const { area, area: { tsdeclarationOverwrite }, comment, name, path, TSDef: [definition]} = member;
+      // member.TSDef[0] = member.TSDef[0].replace(/^public static /, 'function ');
+      return {
+        area,
+        path,
+        comment,
+        code: `${comment}\n${
+          tsdeclarationOverwrite ||
+          definition.replace(/^public static /, 'function ')
+        }`
+      };
+    });
 }
