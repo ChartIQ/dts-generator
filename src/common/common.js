@@ -4,7 +4,9 @@ module.exports = {
   cleanCommentData,
   fixType,
   getDefinition,
-  getParamParts
+  getParamParts,
+  getTSDeclaration,
+  clearTSDeclaration
 }
 
 /* Public */
@@ -164,4 +166,35 @@ function getParamParts(content) {
 
   const [, type, optional, name, , value ] = re.exec(content) || [];
   return { type, isOptional: !!optional, name, defaultValue: optional ? value : '' };
+}
+
+/**
+ * Given JSDoc comment string gets content that follows `@tsdeclaration`
+ * 
+ * @param {string} comment comment content
+ * @returns {string} returns "clean" tsdeclaration content from comment
+ * 
+ * @example
+ * 
+ * @tsdeclaration
+ * function overloaded(arg: string): number
+ * function overloaded(arg: number): string
+ */
+function getTSDeclaration(comment) {
+  const re = /(?<=@tsdeclaration\n) \* ([^@]*)/;
+  const [, declaration = ''] = re.exec(comment) || [];
+  
+  return declaration.replace(/ \*\s*/g, '');
+}
+
+/**
+ * Given JSDoc comment string removes `@tsdeclaration` part
+ * 
+ * @param {string} comment comment content
+ * @returns {string} returns comment content without tsdeclaration part
+ */
+function clearTSDeclaration(comment) {
+  re = / \* @tsdeclaration\n \* ([\s\S]*?)(?= \*\/| \* @)/m;
+
+  return comment.replace(re, '');
 }

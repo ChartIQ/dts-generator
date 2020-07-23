@@ -3,7 +3,7 @@ module.exports = {
   collectAllNotedObjects,
 };
 
-const { getDefinition } = require('../common/common');
+const { getDefinition, getTSDeclaration, clearTSDeclaration } = require('../common/common');
 
 /**
  * @typedef {import('../common/interfaces').Area} Area
@@ -65,17 +65,18 @@ function getCommentAreas(data, tag, extention = {}, isDefinitionRequired = true)
     const startCommentPos = data.lastIndexOf('/**', pos);
     const endCommentPos = data.indexOf('*/', pos) + 2;
     const comment = data.substring(startCommentPos, endCommentPos);
+    const tsdeclarationOverwrite = getTSDeclaration(comment);
     const value = data.substring(pos + tag.length, data.indexOf('\n', pos)).trim();
     const definition = getDefinition(data.substring(endCommentPos + 1)).match;
 
     const area = {
       startCommentPos,
       endCommentPos,
-      comment,
+      comment: clearTSDeclaration(comment),
       value,
       definition: isDefinitionRequired ? definition : '',
       modifiers: [],
-
+      tsdeclarationOverwrite,
       ...extention,
     }
     result.push(area);

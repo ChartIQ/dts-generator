@@ -311,13 +311,79 @@ describe('common.js', () => {
         input: '@param ///',
         expected: { type: undefined, isOptional: false, name: undefined, defaultValue: '' },
       },
-      
     ];
 
     testCases.forEach(({ name, input, expected }) => {
       it(name, () => {
         const result = getParamParts(input);
         expect(result).eql(expected);
+      });
+    });
+  });
+
+  describe('getTSDeclaration', () => {
+    const { getTSDeclaration } = require('../../src/common/common.js');
+    const testCases = [
+      {
+        name: 'should retrieve @tsdeclaration override',
+        input: '\**'+
+          ' * @param {boolean} yesNo \n' +
+          ' * @tsdeclaration\n' +
+          ' * function overloaded(arg: string): number\n' +
+          ' * function overloaded(arg: number): string\n' +
+          ' * @since\n',
+        expected:  'function overloaded(arg: string): number\n' +
+          'function overloaded(arg: number): string\n'
+      },
+      {
+        name: 'should return empty string when @tsdeclaration override is not found',
+        input: '\**'+
+          ' * @param {boolean} yesNo \n' +
+          ' * @since\n',
+        expected:  ''
+      },
+    ];
+
+    testCases.forEach(({ name, input, expected }) => {
+      it(name, () => {
+        const result = getTSDeclaration(input);
+        expect(result).eql(expected);
+      });
+    });
+  });
+  describe('getTSDeclaration', () => {
+    const { clearTSDeclaration } = require('../../src/common/common.js');
+    const testCases = [
+      {
+        name: 'should clear @tsdeclaration content',
+        input: ''+
+          ' * @param {boolean} yesNo \n' +
+          ' * @tsdeclaration\n' +
+          ' * function overloaded(arg: string): number\n' +
+          ' * function overloaded(arg: number): string\n' +
+          ' * @since\n',
+        expected:  ''+
+        ' * @param {boolean} yesNo \n' +
+        ' * @since\n',
+      },
+      {
+        name: 'should clear @tsdeclaration content as last item in comment',
+        input: ''+
+          ' * @param {boolean} yesNo \n' +
+          ' * @tsdeclaration\n' +
+          ' * function overloaded(arg: string): number\n' +
+          ' * function overloaded(arg: number): string\n' +
+          ' */\n',
+        expected:  ''+
+        ' * @param {boolean} yesNo \n' +
+        ' */\n'
+      },
+    ];
+
+    testCases.forEach(({ name, input, expected }) => {
+      it(name, () => {
+        const result = clearTSDeclaration(input);
+        expect(result).eq(expected);
       });
     });
   });
