@@ -42,7 +42,9 @@ function main(){
   const { fileFrom, fileTo, debug } = getArgs();
 
   // Get JS file as a string
-  const dataFrom = readFileSync(fileFrom).toString();
+  const dataFrom = readFileSync(fileFrom)
+    .toString()
+    .replace(/CIQ\.ChartEngine\.AdvancedInjectable/gm, 'CIQ.ChartEngine'); // temporary fix
 
   const dataTo = generate(dataFrom, defaultConfig);
 
