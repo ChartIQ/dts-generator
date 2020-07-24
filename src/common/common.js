@@ -84,7 +84,8 @@ function cleanCommentData(comment, skipAdditional = []) {
  * @returns {string}
  */
 function fixType(type) {
-  type = type.replace('~', '.prototype.')
+  type = type
+    .replace('~', '.')
     .replace('#', '.prototype.')
     .replace('external:', '');
 
