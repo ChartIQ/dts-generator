@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const { intoNamespaces } = require('../../src/merge-analysis/into-namespaces');
 
 describe('into-namespaces.js', () => {
-  describe.only('declaration of namespaces', () => {
+  describe('declaration of namespaces', () => {
     const namespaces = [
       {
         area: {},
