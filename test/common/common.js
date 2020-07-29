@@ -210,7 +210,7 @@ describe('common.js', () => {
     });
     it('keep random type', () => {
       const source = ['myType', 'Wired~thing'];
-      const target = ['myType', 'Wired.prototype.thing'];
+      const target = ['myType', 'Wired.thing'];
 
       const result = source.map(fixType);
 

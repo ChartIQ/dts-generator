@@ -6,7 +6,8 @@ module.exports = {
   getDefinition,
   getParamParts,
   getTSDeclaration,
-  clearTSDeclaration
+  clearTSDeclaration,
+  combineDestructuredArguments
 }
 
 /* Public */
@@ -136,11 +137,12 @@ function fixType(type) {
  * @returns {string}
  */
 function getDefinition(content) {
-  const re = /(\s\S)?[^;{]*/;
-  let [match] = content.match(re);
-  const isFunction = match && /(\bfunction\b|=>)/.test(match);
-  if (match) {
-      match = match
+  const re = /([\s\S]*?)(;|\)\s*\{|\)\s+=>)/;
+  let [, def, end] = content.match(re) || [];
+  if (end && end.charAt(0) === ')') def += end.replace(/\s*\{/, '');
+  const isFunction = def && /(\bfunction\b|=>)/.test(def);
+  if (def) {
+      def = def
         .trim()
         .replace(/\n|\n\r/g, '')
         .replace(/\s{2,}/g, ' ')
@@ -148,7 +150,7 @@ function getDefinition(content) {
         .replace(/ \)/g, ')')
         ;
   }
-  return { match, isFunction }
+  return { match: def, isFunction }
 }
 
 /**
@@ -198,4 +200,16 @@ function clearTSDeclaration(comment) {
   re = / \* @tsdeclaration\n \* ([\s\S]*?)(?= \*\/| \* @)/m;
 
   return comment.replace(re, '');
+}
+
+/**
+ * Given a string of arguments replace destructuring with placeholder
+ * 
+ * @param {string} argumentStr
+ * @returns {string} returns content with destructurning replaced with placeholder
+ */
+function combineDestructuredArguments(argumentStr, placeholder = 'destructured') {
+  const re = /(?<=(^\s*|,\s*))\{[\s\S]*?}/g;
+
+  return argumentStr.replace(re, placeholder);
 }

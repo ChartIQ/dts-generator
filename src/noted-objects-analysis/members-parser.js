@@ -1,5 +1,5 @@
 const { groupBy, set, get } = require('lodash');
-const { fixType, cleanCommentData, getParamParts } = require('../common/common');
+const { fixType, cleanCommentData, getParamParts, combineDestructuredArguments } = require('../common/common');
 
 /* Definition */
 module.exports = {
@@ -127,16 +127,26 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   let tail = ''
   const func = getFunc(firstLine);
   if(constructor || isFunction.test(firstLine)) {
-    const all  = getArguments(firstLine);
+    let all = getArguments(firstLine);
+    all = combineDestructuredArguments(all);
     const args = all.split(',')
       .map(a => a.includes('=') ? a.substring(0, a.indexOf('=')).trim() : a.trim())
       .filter(v => v);
 
     const types = getParams(comment);
-    const params = args.reduce((acc, arg) => {
-      const name = types[arg] ? `${types[arg].name}${types[arg].opt ? '?' : ''}` : arg;
-      const value = types[arg] ? types[arg].type : 'any';
-      return {...acc, [name]: value };
+    const typeArr = Object.keys(types);
+
+    if (Object.keys(types).length !== args.length) {
+      console.log(`Length of JSDoc parameters and definition arguments do not match for "${definition}"`);
+    }
+
+    const params = args.reduce((acc, arg, index) => {
+      const typeObj = types[typeArr[index]];
+      const { name, type, opt } = typeObj;
+      if (arg !== name && arg !== "destructured") {
+        console.log(`Parameter "${arg}" in definition is not the same as in JSDoc "${name}" for "${definition}"`);
+      }
+      return {...acc, [name + (opt ? '?' : '')]: type ? type : 'any' };
     }, {});
     const returns = getReturns(comment);
 
@@ -238,7 +248,7 @@ function getParams(comment) {
     }
     
     const reParentChild = /(.*)(\.)([^.]*$)/;
-   
+
     // Update optional keys
     const removeUpdated = [];
     nodes
