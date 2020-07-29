@@ -146,7 +146,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
       if (arg !== name && arg !== "destructured") {
         console.log(`Parameter "${arg}" in definition is not the same as in JSDoc "${name}" for "${definition}"`);
       }
-      return {...acc, [name + (opt ? '?' : '')]: type ? type : 'any' };
+      return {...acc, [(name || arg) + (opt ? '?' : '')]: type ? type : 'any' };
     }, {});
     const returns = getReturns(comment);
 
