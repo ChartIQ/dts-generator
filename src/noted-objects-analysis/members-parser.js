@@ -142,7 +142,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
     const params = args.reduce((acc, arg, index) => {
       const typeObj = types[typeArr[index]];
-      const { name, type, opt } = typeObj;
+      const { name, type, opt } = typeObj || {};
       if (arg !== name && arg !== "destructured") {
         console.log(`Parameter "${arg}" in definition is not the same as in JSDoc "${name}" for "${definition}"`);
       }
