@@ -200,7 +200,7 @@ describe('common.js', () => {
 
       expect(result).eql(target);
     });
-    it('keep tamplate type structure', () => {
+    it('keep template type structure', () => {
       const source = ['map', 'set', 'weakmap', 'weakset', 'map<any, any>', 'set<any>', 'weakmap<any, any>', 'weakset<any>'];
       const target = ['Map', 'Set', 'WeakMap', 'WeakSet', 'Map<any, any>', 'Set<any>', 'WeakMap<any, any>', 'WeakSet<any>'];
 
@@ -224,6 +224,13 @@ describe('common.js', () => {
 
       expect(result).eql(target);
     });
+    it('converts each type of a union type', () => {
+      const source = ['(Custom~type|array|mAp)'];
+      const target = ['(Custom.type|any[]|Map)'];
+
+      const result = source.map(fixType);
+      expect (result).eql(target)
+    })
   });
 
   describe('getDefinition', () => {

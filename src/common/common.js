@@ -85,49 +85,58 @@ function cleanCommentData(comment, skipAdditional = []) {
  * @returns {string}
  */
 function fixType(type) {
-  type = type
-    .replace('~', '.')
-    .replace('#', '.prototype.')
-    .replace('external:', '');
+  const isUnion = type[0]==="(" && type[type.length-1]===")"
+  if (isUnion) {
+    let types = type.substring(1, type.length-1).split("|").map(coerce)
+    return `(${types.join("|")})`
+  } else {
+    return coerce(type)
+  }
 
-  switch (true) {
-  case type.toLowerCase() === 'function':
-    return 'Function';
+  function coerce(type) {
+    type = type
+      .replace('~', '.')
+      .replace('#', '.prototype.')
+      .replace('external:', '');
+    switch (true) {
+    case type.toLowerCase() === 'function':
+      return 'Function';
 
-  case type.toLowerCase() === 'date':
-    return 'Date';
+    case type.toLowerCase() === 'date':
+      return 'Date';
 
-  case type.toLowerCase() === 'node':
-    return 'Node';
+    case type.toLowerCase() === 'node':
+      return 'Node';
 
-  case type.toLowerCase().substring(0, 4) === 'set<':
-    return 'Set' + type.substring(3);
-  case type.toLowerCase().substring(0, 3) === 'set':
-    return 'Set';
+    case type.toLowerCase().substring(0, 4) === 'set<':
+      return 'Set' + type.substring(3);
+    case type.toLowerCase().substring(0, 3) === 'set':
+      return 'Set';
 
-  case type.toLowerCase().substring(0, 4) === 'map<':
-    return 'Map' + type.substring(3);
-  case type.toLowerCase().substring(0, 3) === 'map':
-    return 'Map';
+    case type.toLowerCase().substring(0, 4) === 'map<':
+      return 'Map' + type.substring(3);
+    case type.toLowerCase().substring(0, 3) === 'map':
+      return 'Map';
 
-  case type.toLowerCase().substring(0, 8) === 'weakset<':
-    return 'WeakSet' + type.substring(7);
-  case type.toLowerCase().substring(0, 7) === 'weakset':
-    return 'WeakSet';
+    case type.toLowerCase().substring(0, 8) === 'weakset<':
+      return 'WeakSet' + type.substring(7);
+    case type.toLowerCase().substring(0, 7) === 'weakset':
+      return 'WeakSet';
 
-  case type.toLowerCase().substring(0, 8) === 'weakmap<':
-    return 'WeakMap' + type.substring(7);
-  case type.toLowerCase().substring(0, 7) === 'weakmap':
-    return 'WeakMap';
+    case type.toLowerCase().substring(0, 8) === 'weakmap<':
+      return 'WeakMap' + type.substring(7);
+    case type.toLowerCase().substring(0, 7) === 'weakmap':
+      return 'WeakMap';
 
-  case type.toLowerCase() === 'array':
-    return 'any[]';
+    case type.toLowerCase() === 'array':
+      return 'any[]';
 
-  case type === '*':
-    return 'any';
+    case type === '*':
+      return 'any';
 
-  default:
-    return type;
+    default:
+      return type;
+    }
   }
 }
 
