@@ -142,10 +142,19 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
     const params = args.reduce((acc, arg, index) => {
       const typeObj = types[typeArr[index]];
-      const { name, type, opt } = typeObj || {};
+      let { name, type, opt } = typeObj || {};
+
       if (arg !== name && arg !== "destructured") {
         console.log(`Parameter "${arg}" in definition is not the same as in JSDoc "${name}" for "${definition}"`);
       }
+
+      // Check the next index. If it is NOT optional, then this param cannot be optoinal.
+      // Instead make it a union type with undefined
+      if (opt && typeArr[index+1] && !typeArr[index+1].opt) {
+        opt = false
+        type = `(${type}|undefined)`
+      }
+
       return {...acc, [(name || arg) + (opt ? '?' : '')]: type ? type : 'any' };
     }, {});
     const returns = getReturns(comment);
@@ -169,7 +178,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
   function outputParams(params) {
     let paramStr = Object.keys(params).length ? JSON.stringify(params) : '';
-    if (paramStr.length > 60) {
+    if (paramStr.length > 80) {
       paramStr = JSON.stringify(params, null, 2);
     }
     else {

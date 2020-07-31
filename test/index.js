@@ -18,7 +18,7 @@ declare module './main' {
 
       expect(result).eql(target);
     });
-    it('wirk with default config', () => {
+    it('work with default config', () => {
       const source = `/**
  * @module ./main
  * @timport { Main } from './main'

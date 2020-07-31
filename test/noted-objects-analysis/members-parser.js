@@ -65,6 +65,25 @@ describe('members-parser.js', () => {
       expect(result[0].path).eql(['Foo', 'Bar']);
       expect(result[0].name).eql('method');
     });
+
+    it('changes optional parameters that are not at the end to be a union with undefined', ()=> {
+      const source = [
+        {
+          startCommentPos: 1,
+          endCommentPos: 117,
+          comment: '/**\n \n * @memberof Wrapper\n * @param {string} file\n * @param {object} [options] options\n * @param {function} cb callback\n */',
+          value:  'Wrapper.readFile',
+          definition: 'Wrapper.readFile = function(file, options, cb) {}',
+          modifiers: ['public', 'static'],
+          type: 'method'
+        }
+      ]
+
+      const result = createMembersTSDefs(source)
+
+      expect(result[0].area).eql(source[0])
+      expect(result[0].TSDef).eql(['public static readFile(file: string, options: (object|undefined), cb: Function): void'])
+    })
   });
 
   describe('constructors', () => {
