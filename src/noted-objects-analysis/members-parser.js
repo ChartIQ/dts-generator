@@ -152,7 +152,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
       // Instead make it a union type with undefined
       if (opt && typeArr[index+1] && !typeArr[index+1].opt) {
         opt = false
-        type = `(${type}|undefined)`
+        type = (type instanceof Object && !Array.isArray(type)) ? `${JSON.stringify(type)} | undefined` : `${type} | undefined`
       }
 
       return {...acc, [(name || arg) + (opt ? '?' : '')]: type ? type : 'any' };
@@ -184,7 +184,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     else {
       paramStr = paramStr.replace(/(\:|,)/g, '$1 ');
     }
-    paramStr = paramStr.replace(/"/g, '');
+    paramStr = paramStr.replace(/\"/g, '').replace(/\\/g, '');
     paramStr = paramStr.substring(1, paramStr.length - 1);
     
     return paramStr;

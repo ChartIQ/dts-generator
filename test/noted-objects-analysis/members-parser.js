@@ -82,7 +82,41 @@ describe('members-parser.js', () => {
       const result = createMembersTSDefs(source)
 
       expect(result[0].area).eql(source[0])
-      expect(result[0].TSDef).eql(['public static readFile(file: string, options: (object|undefined), cb: Function): void'])
+      expect(result[0].TSDef).eql(['public static readFile(file: string, options: object | undefined, cb: Function): void'])
+    })
+
+    it('correctly accounts for an object when changing a type to be a union with undefined', ()=> {
+      const source = [
+        {
+          startCommentPos: 1,
+          endCommentPos: 359,
+          comment: 
+`/**
+* Simple wrapper around Node fs.readFile
+* @param {string} file File to read
+* @param {object} [options] Optins to pass to globs
+* @param {boolean} [options.action] Do some action
+* @param {string} [options.name] Some action name
+* @param {object} [options.subOption] some sub options
+* @param {function} cb completed callback
+* @memberof Wrapper#`,
+          value:  'Wrapper.readFile',
+          definition: 'Wrapper.readFile = function(file, options, cb) {}',
+          modifiers: ['public', 'static'],
+          type: 'method'
+        }
+      ]
+
+      const result = createMembersTSDefs(source)
+
+      expect(result[0].area).eql(source[0])
+      expect(result[0].TSDef).eql([
+        "public static readFile(\n"+
+        "  file: string,\n"+
+        "  options: {action?:boolean,name?:string,subOption?:object} | undefined,\n"+
+        "  cb: Function\n"+
+        "): void"
+      ])
     })
   });
 
