@@ -117,7 +117,35 @@ describe('members-parser.js', () => {
         "  cb: Function\n"+
         "): void"
       ])
-    })
+    });
+
+    it('process rest parametrs', ()=> {
+      const source = [
+        {
+          startCommentPos: 1,
+          endCommentPos: 359,
+          comment: 
+`/**
+* Variadic function
+* @param {string} first First string to concatenate
+* @param {...string} others others to concatenate
+* @return {string}
+* @memberof Foo.Bar`,
+          value:  'Foo.Bar',
+          definition: 'Foo.Bar.concat = function(first, ...others) { return others.join(",");)}',
+          modifiers: ['public', 'static'],
+          type: 'method'
+        }
+      ]
+
+      const result = createMembersTSDefs(source);
+
+      console.log(result[0].TSDef[0]);
+
+      expect(result[0].TSDef).eql([
+        "public static concat(first: string, ...others: string[]): string"
+      ])
+    });
   });
 
   describe('constructors', () => {

@@ -144,8 +144,14 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
       const typeObj = types[typeArr[index]];
       let { name, type, opt } = typeObj || {};
 
+
       if (arg !== name && arg !== "destructured") {
         console.log(`Parameter "${arg}" in definition is not the same as in JSDoc "${name}" for "${definition}"`);
+      }
+
+      if (typeof type === 'string' && type.substr(0, 3) === '...') { // if it is rest parameter
+        type = type.replace('...', '') + '[]';
+        name = '...' + name;
       }
 
       // Check the next index. If it is NOT optional, then this param cannot be optoinal.
@@ -189,6 +195,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     
     return paramStr;
   }
+
 }
 
 /**
