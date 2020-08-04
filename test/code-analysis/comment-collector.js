@@ -168,7 +168,29 @@ Foo.Bar.method = (arg1, arg2) => {};
       expect(result.members[0].type).eql('method');
       expect(result.members[0].modifiers).eql(['public', 'static']);
       expect(result.members[0].definition).eql('Foo.Bar.method = (arg1, arg2) =>');
-    })
+    });
+
+    it('create class instance method', () => {
+      const source =
+`
+/**
+ * @memberof Foo.Bar
+ * @param {string} arg1
+ * @param {number} arg2
+ */
+instanceMethod(arg1, arg2) {};
+`;
+      const result = collectAllNotedObjects(source);
+      console.log(result.members[0]);
+
+      expect(result.names.length).eql(0);
+      expect(result.types.length).eql(0);
+      expect(result.members.length).eql(1);
+      expect(result.members[0].value).eql('Foo.Bar');
+      expect(result.members[0].type).eql('method');
+      expect(result.members[0].modifiers).eql(['public']);
+      expect(result.members[0].definition).eql('instanceMethod(arg1, arg2)');
+    });
 
     it('create class propeties with data', () => {
       const source =

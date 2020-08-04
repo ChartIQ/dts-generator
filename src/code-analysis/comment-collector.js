@@ -114,6 +114,7 @@ function classifyNamedObjects(names) {
  */
 function applyMemberRoles(members, data) {
   const result = [];
+  const isClassMethod = definition => /^\s*\w*\s*\(/.test(definition);
 
   for (const member of members) {
     const _member = { ...member }
@@ -128,7 +129,8 @@ function applyMemberRoles(members, data) {
       member.definition.includes('.prototype.') === false &&
       member.value.includes('.prototype') === false &&
       member.value[member.value.length - 1] !== '#' &&
-      !member.comment.includes(' @instance')
+      !member.comment.includes(' @instance') &&
+      !isClassMethod(member.definition)
     ) {
       _member.modifiers.push('static');
     }
