@@ -85,7 +85,7 @@ function cleanCommentData(comment, skipAdditional = []) {
  * @returns {string}
  */
 function fixType(type) {
-  return type.replace(/\s*((\w|\.|~)+)\s*/g, coerce);
+  return type.replace(/\s*((\w|\.|~|\*)+)\s*/g, coerce);
 
   function coerce(type) {
     type = type
