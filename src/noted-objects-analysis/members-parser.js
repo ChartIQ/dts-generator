@@ -19,7 +19,7 @@ module.exports = {
  * **NOTE** Will not detect  inline arrow functions
  * @type {RegExp}
  */
-const aClassMethod = '(^\\s*(?!if\\s)\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"
+const aClassMethod = '(^\\s*(static){0,1}\\s*(?!if\\s)\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"
 const aFunction = '(function\\s*\\(.*\\))';
 const anArrowFunction = '(\\(.*\\)\\s*\\s*=>)';
 const isFunction = new RegExp(`${aClassMethod}|${aFunction}|${anArrowFunction}`);

@@ -129,11 +129,14 @@ function applyMemberRoles(members, data) {
     }
 
     if (
-      member.definition.includes('.prototype.') === false &&
-      member.value.includes('.prototype') === false &&
-      member.value[member.value.length - 1] !== '#' &&
-      !member.comment.includes(' @instance') &&
-      !isClassMethod(member.definition)
+      /^\s*static\s/.test(member.definition) ||
+      (
+        member.definition.includes('.prototype.') === false &&
+        member.value.includes('.prototype') === false &&
+        member.value[member.value.length - 1] !== '#' &&
+        !member.comment.includes(' @instance') &&
+        !isClassMethod(member.definition)
+      )
     ) {
       _member.modifiers.push('static');
     }
