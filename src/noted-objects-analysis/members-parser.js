@@ -237,7 +237,7 @@ function getParams(comment) {
 
     if (type) {
       const el = { 
-        type: type.split('|').map(item => item.trim()).map(fixType).join('|'),
+        type: fixType(type),
         name,
         opt: isOptional
       };

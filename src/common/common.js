@@ -85,13 +85,7 @@ function cleanCommentData(comment, skipAdditional = []) {
  * @returns {string}
  */
 function fixType(type) {
-  const isUnion = type[0]==="(" && type[type.length-1]===")"
-  if (isUnion) {
-    let types = type.substring(1, type.length-1).split("|").map(coerce)
-    return `(${types.join("|")})`
-  } else {
-    return coerce(type)
-  }
+  return type.replace(/\s*((\w|\.|~)+)\s*/g, coerce);
 
   function coerce(type) {
     type = type
