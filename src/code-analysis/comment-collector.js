@@ -114,7 +114,10 @@ function classifyNamedObjects(names) {
  */
 function applyMemberRoles(members, data) {
   const result = [];
-  const isClassMethod = definition => /^\s*\w*\s*\(/.test(definition);
+  const isClassMethod = definition => {
+    const [, name] = /^\s*(\w*)\s*\(/.exec(definition) || [];
+    return name && name !== 'if';
+  };
 
   for (const member of members) {
     const _member = { ...member }
