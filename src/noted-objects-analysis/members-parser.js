@@ -169,7 +169,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
     tail = `(${outputParams(params)})`;
 
-    if (constructor === false) {
+    if (constructor === false && name !== 'constructor') {
       tail += `: ${returns}`;
     }
   } else
@@ -237,7 +237,7 @@ function getParams(comment) {
 
     if (type) {
       const el = { 
-        type: fixType(type),
+        type: type.split('|').map(item => item.trim()).map(fixType).join('|'),
         name,
         opt: isOptional
       };
