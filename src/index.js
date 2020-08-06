@@ -11,6 +11,7 @@ const { createModuleTSDefs } = require('./noted-objects-analysis/module-parser')
 const { createMembersTSDefs, createConstructorsTSDefs } = require('./noted-objects-analysis/members-parser');
 const { createNamespacesTSDefs, createClassesTSDefs } = require('./noted-objects-analysis/named-parser');
 const { createTypedefsTSDefs, createCallbacksTSDefs } = require('./noted-objects-analysis/types-parser');
+const { createExportsTSDefs } = require('./noted-objects-analysis/exports-parser');
 const { intoClasses } = require('./merge-analysis/into-classes');
 const { intoNamespaces } = require('./merge-analysis/into-namespaces');
 const { intoTypedefs } = require('./merge-analysis/into-typedefs');
@@ -124,10 +125,12 @@ function getArgs() {
  */
 function generate(dataFrom, config = defaultConfig) {
   config = Object.assign({}, defaultConfig, config);
+  const definitions = [];
 
   // Grab all required comments into grouped objects
   const notedObjects = collectAllNotedObjects(dataFrom);
 
+  definitions.push(createExportsTSDefs(notedObjects.exports));
   // Convert the data into something that could be used as a defenition
   const members = createMembersTSDefs(notedObjects.members);
   const constructors = createConstructorsTSDefs(notedObjects.names);
@@ -148,9 +151,9 @@ function generate(dataFrom, config = defaultConfig) {
     ...classStaticMembersToNamespaceFunctions(members)
   ]);
   const moduleDefs = intoModules(module, namespaceDefs);
-
+  definitions.push(moduleDefs);
   // Join all into one TS declarations file and save it
-  return moduleDefs.map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
+  return definitions.flat().map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
 }
 
 /**

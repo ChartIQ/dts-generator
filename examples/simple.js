@@ -2,7 +2,7 @@
  * A simple class with a method and a property
  * @name Simple
  */
-class Simple {
+export class Simple {
     constructor() {
         /**
          * Sample property on our class. Prop 'foo' is true!

@@ -3,3 +3,4 @@ node_modules
 
 # Ignore compiled example files
 examples/*.d.ts
+examples/**/*.d.ts

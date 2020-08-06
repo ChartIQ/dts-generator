@@ -20,6 +20,8 @@ function collectAllNotedObjects(data) {
   // Collect all namespaces into collection
   const names = classifyNamedObjects(getCommentAreas(data, '* @name '));
 
+  const exports = getCommentAreas(data, '* @exports')
+
   // Collect all callback, typedef
   const types = [
     ...getCommentAreas(data, '* @typedef ', { type: 'typedef' }, false),
@@ -42,6 +44,7 @@ function collectAllNotedObjects(data) {
     types,
     members,
     module,
+    exports,
   };
 }
 
