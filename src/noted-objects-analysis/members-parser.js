@@ -73,13 +73,13 @@ function createConstructorsTSDefs(classes) {
   const result = [];
 
   for (const constructor of classes) {
-    const { definition, value, type, modifiers, comment, tsdeclarationOverwrite }  = constructor;
+    const { value, type, modifiers, comment, tsdeclarationOverwrite }  = constructor;
 
     if (type !== 'class' || comment.includes('* @constructor') === false) {
       continue;
     }
 
-    const { TSDef, name } = setMemberDefinitions(definition, comment, modifiers, true);
+    const { TSDef, name } = setMemberDefinitions(constructor.definition, comment, modifiers, true);
     const path = value.split('.');
 
     const definition = {
