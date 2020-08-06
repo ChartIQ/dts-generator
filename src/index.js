@@ -135,7 +135,7 @@ function generate(dataFrom, config = defaultConfig) {
   const classes = createClassesTSDefs(notedObjects.names);
   const types = createTypedefsTSDefs(notedObjects.types);
   const callbacks = createCallbacksTSDefs(notedObjects.types);
-  const module = createModuleTSDefs(notedObjects.module, config.importTagName);
+  const module = createModuleTSDefs(notedObjects.module, config.importTagName, config.exportTagName);
 
   // Include declarations into each other and get a strings
   const classDefs = intoClasses(classes, [...constructors, ...members]);
