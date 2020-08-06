@@ -73,17 +73,18 @@ function createConstructorsTSDefs(classes) {
   const result = [];
 
   for (const constructor of classes) {
-    if (constructor.type !== 'class' || constructor.comment.includes('* @constructor') === false) {
+    const { definition, value, type, modifiers, comment, tsdeclarationOverwrite }  = constructor;
+
+    if (type !== 'class' || comment.includes('* @constructor') === false) {
       continue;
     }
 
-    const comment = constructor.comment;
-    const { TSDef, name } = setMemberDefinitions(constructor.definition, comment, constructor.modifiers, true);
-    const path = constructor.value.split('.');
+    const { TSDef, name } = setMemberDefinitions(definition, comment, modifiers, true);
+    const path = value.split('.');
 
     const definition = {
       area: constructor,
-      TSDef,
+      TSDef: tsdeclarationOverwrite ? [tsdeclarationOverwrite] : TSDef,
       comment: cleanCommentData(comment),
       path,
       name,
