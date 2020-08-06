@@ -1,0 +1,1 @@
+npx typescript examples/modules/simple.js --declaration --allowJs --emitDeclarationOnly --outDir types
