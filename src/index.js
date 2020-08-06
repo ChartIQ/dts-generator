@@ -42,14 +42,20 @@ function main(){
   const { fileFrom, fileTo, debug } = getArgs();
 
   // Get JS file as a string
-  const dataFrom = readFileSync(fileFrom)
-    .toString()
-    .replace(/CIQ\.ChartEngine\.AdvancedInjectable/gm, 'CIQ.ChartEngine'); // temporary fix
+  let data = readFileSync(fileFrom).toString()
 
-  const dataTo = generate(dataFrom, defaultConfig);
+  if (config.preprocessing) {
+    data = config.preprocessing(data)
+  }
+
+  data = generate(data, defaultConfig);
+
+  if (config.postprocessing) {
+    data = config.postprocessing(data)
+  }
 
   // Write to file returned string
-  writeFileSync(fileTo, dataTo);
+  writeFileSync(fileTo, data);
 
   console.info(`File ${basename(fileTo)} sucessfully created.`);
 
