@@ -35,13 +35,14 @@ const namedFunction = new RegExp(/\w*(?=\s*\()/);
  * Created TS code lines for each member
  * @param {Area[]} members
  */
-function createMembersTSDefs(members) {
+function createMembersTSDefs(members, includePrivate) {
   /**
    * @type {Definition[]}
    */
   const result = [];
   for (const member of members) {
     const comment = member.comment;
+    if (/\* @private/.test(comment) && !includePrivate) continue;
     const { TSDef, name } = setMemberDefinitions(member.definition, comment, member.modifiers);
     const path = member.value.split(/[\.\#]/g).filter(v => v);
 

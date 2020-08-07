@@ -12,5 +12,6 @@ module.exports = {
 
     data +=  `\n${exported.join('\n')}`;
     return data
-  }
+  },
+  includePrivate: false
 };
