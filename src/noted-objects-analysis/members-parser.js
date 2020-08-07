@@ -106,6 +106,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   const firstLine = definition.substring(0, definition.indexOf('\n')) || definition;
   let name = '';
   let value = '';
+  const isDeprecated = /\* @deprecated/m.test(comment);
 
   if (constructor === true) {
     name = 'constructor';
@@ -137,7 +138,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     const types = getParams(comment);
     const typeArr = Object.keys(types);
 
-    if (Object.keys(types).length !== args.length) {
+    if (!isDeprecated && Object.keys(types).length !== args.length) {
       console.log(`Length of JSDoc parameters and definition arguments do not match for "${definition}"`);
     }
 
@@ -146,7 +147,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
       let { name, type, opt } = typeObj || {};
 
 
-      if (arg !== name && arg !== "destructured") {
+      if (!isDeprecated && arg !== name && arg !== "destructured") {
         console.log(`Parameter "${arg}" in definition is not the same as in JSDoc "${name}" for "${definition}"`);
       }
 
