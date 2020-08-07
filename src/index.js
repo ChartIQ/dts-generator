@@ -42,20 +42,12 @@ function main(){
   const { fileFrom, fileTo, debug } = getArgs();
 
   // Get JS file as a string
-  let data = readFileSync(fileFrom).toString()
+  const dataIn = readFileSync(fileFrom).toString()
 
-  if (config.preprocessing) {
-    data = config.preprocessing(data)
-  }
-
-  data = generate(data, defaultConfig);
-
-  if (config.postprocessing) {
-    data = config.postprocessing(data)
-  }
+  const dataOut = generate(dataIn, defaultConfig);
 
   // Write to file returned string
-  writeFileSync(fileTo, data);
+  writeFileSync(fileTo, dataOut);
 
   console.info(`File ${basename(fileTo)} sucessfully created.`);
 
@@ -129,7 +121,8 @@ function getArgs() {
  * @returns {string}
  */
 function generate(dataFrom, config = defaultConfig) {
-  config = Object.assign({}, defaultConfig, config);
+  // Do any preprocessing on the data before we start parsing
+  if(config.preprocessing) dataFrom = config.preprocessing(dataFrom);
 
   // Grab all required comments into grouped objects
   const notedObjects = collectAllNotedObjects(dataFrom);
@@ -156,7 +149,10 @@ function generate(dataFrom, config = defaultConfig) {
   const moduleDefs = intoModules(module, namespaceDefs);
 
   // Join all into one TS declarations file and save it
-  return moduleDefs.map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
+  let definitions = moduleDefs.map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
+
+  if(config.postprocessing) definitions = config.postprocessing(definitions, dataFrom);
+  return definitions
 }
 
 /**
