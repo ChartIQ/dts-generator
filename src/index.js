@@ -121,20 +121,33 @@ function getArgs() {
  * @returns {string}
  */
 function generate(dataFrom, config = defaultConfig) {
+  const {
+    preprocessing,
+    postprocessing,
+    importTagName,
+    exportTagName,
+    includePrivate,
+    expandPropertyDeclarationBasedOnDefault
+  } = config;
+
   // Do any preprocessing on the data before we start parsing
-  if(config.preprocessing) dataFrom = config.preprocessing(dataFrom);
+  if(preprocessing) dataFrom = preprocessing(dataFrom);
 
   // Grab all required comments into grouped objects
   const notedObjects = collectAllNotedObjects(dataFrom);
 
   // Convert the data into something that could be used as a defenition
-  const members = createMembersTSDefs(notedObjects.members);
-  const constructors = createConstructorsTSDefs(notedObjects.names);
+  const members = createMembersTSDefs(notedObjects.members, {
+    includePrivate, expandPropertyDeclarationBasedOnDefault
+  });
+  const constructors = createConstructorsTSDefs(notedObjects.names, {
+    expandPropertyDeclarationBasedOnDefault
+  });
   const namespaces = createNamespacesTSDefs(notedObjects.names);
   const classes = createClassesTSDefs(notedObjects.names);
   const types = createTypedefsTSDefs(notedObjects.types);
   const callbacks = createCallbacksTSDefs(notedObjects.types);
-  const module = createModuleTSDefs(notedObjects.module, config.importTagName, config.exportTagName);
+  const module = createModuleTSDefs(notedObjects.module, importTagName, exportTagName);
 
   // Include declarations into each other and get a strings
   const classDefs = intoClasses(classes, [...constructors, ...members]);
@@ -151,7 +164,7 @@ function generate(dataFrom, config = defaultConfig) {
   // Join all into one TS declarations file and save it
   let definitions = moduleDefs.map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
 
-  if(config.postprocessing) definitions = config.postprocessing(definitions, dataFrom);
+  if(postprocessing) definitions = postprocessing(definitions, dataFrom);
   return definitions
 }
 

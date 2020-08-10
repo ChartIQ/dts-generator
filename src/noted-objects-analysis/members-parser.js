@@ -1,5 +1,11 @@
 const { groupBy, set, get } = require('lodash');
-const { fixType, cleanCommentData, getParamParts, combineDestructuredArguments } = require('../common/common');
+const {
+  fixType,
+  cleanCommentData,
+  getParamParts,
+  combineDestructuredArguments,
+  getTSPropertyDef
+} = require('../common/common');
 
 /* Definition */
 module.exports = {
@@ -35,7 +41,12 @@ const namedFunction = new RegExp(/\w*(?=\s*\()/);
  * Created TS code lines for each member
  * @param {Area[]} members
  */
-function createMembersTSDefs(members, includePrivate) {
+function createMembersTSDefs(
+  members, 
+  { 
+    includePrivate, 
+    expandPropertyDeclarationBasedOnDefault
+  } = {}) {
   /**
    * @type {Definition[]}
    */
@@ -43,7 +54,13 @@ function createMembersTSDefs(members, includePrivate) {
   for (const member of members) {
     const comment = member.comment;
     if (/\* @private/.test(comment) && !includePrivate) continue;
-    const { TSDef, name } = setMemberDefinitions(member.definition, comment, member.modifiers);
+    const { TSDef, name } = setMemberDefinitions(
+      member.definition,
+      comment,
+      member.modifiers,
+      false,
+      expandPropertyDeclarationBasedOnDefault
+    );
     const path = member.value.split(/[\.\#]/g).filter(v => v);
 
     if (path.indexOf('prototype') + 1 === path.length) {
@@ -67,7 +84,7 @@ function createMembersTSDefs(members, includePrivate) {
  * Created TS code lines for class constructors
  * @param {Area[]} classes
  */
-function createConstructorsTSDefs(classes) {
+function createConstructorsTSDefs(classes, { expandPropertyDeclarationBasedOnDefault } = {}) {
   /**
    * @type {Definition[]}
    */
@@ -80,7 +97,13 @@ function createConstructorsTSDefs(classes) {
       continue;
     }
 
-    const { TSDef, name } = setMemberDefinitions(constructor.definition, comment, modifiers, true);
+    const { TSDef, name } = setMemberDefinitions(
+      constructor.definition,
+      comment,
+      modifiers,
+      true,
+      expandPropertyDeclarationBasedOnDefault
+    );
     const path = value.split('.');
 
     const definition = {
@@ -103,10 +126,11 @@ function createConstructorsTSDefs(classes) {
  * @param {string[]} modifiers
  * @returns {{TSDef: string[], name: string}}
  */
-function setMemberDefinitions(definition, comment, modifiers, constructor = false) {
+function setMemberDefinitions(definition, comment, modifiers, constructor = false, expand) {
   const firstLine = definition.substring(0, definition.indexOf('\n')) || definition;
   let name = '';
   let value = '';
+  let isPropertyType = false;
   const isDeprecated = /\* @deprecated/m.test(comment);
 
   if (constructor === true) {
@@ -115,8 +139,13 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   } else
   // If in an object? Probably Object.defineProperty or object.definePropertie
   if (firstLine.indexOf(':') > -1 && (firstLine.indexOf('{') === -1 || firstLine.indexOf('{') > firstLine.indexOf(':'))) {
-    name = firstLine.substring(0, firstLine.indexOf(':')).trim();
-    value = definition.substring(definition.indexOf(':') + 1);
+    if (expand) {
+      isPropertyType = true;
+      ({ name, value } = getTSPropertyDef(definition));
+    } else {
+      name = firstLine.substring(0, firstLine.indexOf(':')).trim();
+      value = definition.substring(definition.indexOf(':') + 1);
+    }
   } else
   // If setting value equal to function
   if (firstLine.indexOf('=') > -1) {
@@ -128,8 +157,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   }
 
   let tail = ''
-  const func = getFunc(firstLine);
-  if(constructor || isFunction.test(firstLine)) {
+  if(constructor || (!isPropertyType && isFunction.test(firstLine))) {
     let all = getArguments(firstLine);
     all = combineDestructuredArguments(all);
     const args = all.split(',')
@@ -179,7 +207,11 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   if (comment.includes('* @type')) {
     const type = getFieldType(comment);
     if (type !== '') {
-      tail = `: ${type}`;
+      tail = `: ${
+        isPropertyType && value && value !== '{}'
+          ? type.replace(/object/, value)
+          : type
+      }`;
     }
   }
 
@@ -198,7 +230,6 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     
     return paramStr;
   }
-
 }
 
 /**

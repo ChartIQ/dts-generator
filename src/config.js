@@ -13,5 +13,6 @@ module.exports = {
     data +=  `\n${exported.join('\n')}`;
     return data
   },
-  includePrivate: false
+  includePrivate: false,
+  expandPropertyDeclarationBasedOnDefault: true
 };
