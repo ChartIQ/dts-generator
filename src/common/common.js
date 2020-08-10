@@ -205,10 +205,12 @@ function getParamParts(content) {
  * function overloaded(arg: number): string
  */
 function getTSDeclaration(comment) {
-  const re = /(?<=@tsdeclaration\n) \* ([^@]*)/;
-  const [, declaration = ''] = re.exec(comment) || [];
+  const re = /(?<=@tsdeclaration\n)( |\t)*\* ([^@]*)/;
+  const [, , declaration = ''] = re.exec(comment) || [];
   
-  return declaration.replace(/ \*\s*/g, '');
+  return declaration
+    .replace(/\s*\*\/$/g, '')
+    .replace(/( |\t)*\* /g, '');
 }
 
 /**
@@ -218,7 +220,7 @@ function getTSDeclaration(comment) {
  * @returns {string} returns comment content without tsdeclaration part
  */
 function clearTSDeclaration(comment) {
-  re = / \* @tsdeclaration\n \* ([\s\S]*?)(?= \*\/| \* @)/m;
+  re = / \* @tsdeclaration\n( |\t)*\* ([\s\S]*?)(?= \*\/| \* @)/m;
 
   return comment.replace(re, '');
 }

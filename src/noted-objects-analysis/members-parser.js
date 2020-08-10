@@ -69,7 +69,7 @@ function createMembersTSDefs(
 
     const definition = {
       area: member,
-      TSDef,
+      TSDef: member.tsdeclarationOverwrite ? [member.tsdeclarationOverwrite] : TSDef,
       comment: cleanCommentData(comment),
       path,
       name,
