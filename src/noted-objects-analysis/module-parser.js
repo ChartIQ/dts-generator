@@ -88,6 +88,5 @@ function getTExports(comment, tExportName) {
     result.push(importLine);
   }
 
-  console.log(`check the result: ${result}`)
   return result;
 }

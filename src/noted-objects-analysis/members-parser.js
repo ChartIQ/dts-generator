@@ -176,7 +176,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
       let { name, type, opt } = typeObj || {};
 
 
-      if (!isDeprecated && arg !== name && arg !== "destructured") {
+      if (!isDeprecated && arg.replace(/^\.{3}/, '') !== name && arg !== "destructured") {
         console.log(`Parameter "${arg}" in definition is not the same as in JSDoc "${name}" for "${definition}"`);
       }
 
