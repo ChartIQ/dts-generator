@@ -179,7 +179,7 @@ function generate(dataFrom, config = defaultConfig) {
  */
 function classStaticMembersToNamespaceFunctions(members) {
   return members
-    .filter(member => /^public static \w*?\s*\(/.test(member.TSDef[0]))
+    .filter(member => /^public static \w*?\s*\(|^function\s*/.test(member.TSDef[0]))
     .map((member) => {
       const { area, area: { tsdeclarationOverwrite }, comment, name, path, TSDef: [definition]} = member;
       // member.TSDef[0] = member.TSDef[0].replace(/^public static /, 'function ');

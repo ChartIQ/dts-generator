@@ -48,7 +48,7 @@ function intoClasses(classes, members) {
     }
 
     // do not add static members, add them to namespace
-    if (/^public static \w*?\s*\(/.test(member.TSDef[0])) continue;
+    if (/^public static \w*?\s*\(|function/.test(member.TSDef[0])) continue;
 
     pairs[path].members.push(member);
   }
