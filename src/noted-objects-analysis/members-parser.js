@@ -166,18 +166,25 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
     const types = getParams(comment);
     const typeArr = Object.keys(types);
+    const [, memberof] = /memberof (.*)/.exec(comment) || [];
 
     if (!isDeprecated && Object.keys(types).length !== args.length) {
-      console.log(`Length of JSDoc parameters and definition arguments do not match for "${definition}"`);
+      console.log(
+        'Length of JSDoc parameters (' + Object.keys(types).length + ') ' +
+        'and definition arguments (' + args.length + ') ' +
+        'do not match for ' + memberof + ' ' + definition
+      );
     }
 
     const params = args.reduce((acc, arg, index) => {
       const typeObj = types[typeArr[index]];
       let { name, type, opt } = typeObj || {};
 
-
       if (!isDeprecated && arg.replace(/^\.{3}/, '') !== name && arg !== "destructured") {
-        console.log(`Parameter "${arg}" in definition is not the same as in JSDoc "${name}" for "${definition}"`);
+        console.log(
+          'Parameter ' + arg + ' in definition is not the same as in JSDoc ' + name +
+          ' for the ' + memberof + ' ' + definition
+        );
       }
 
       if (typeof type === 'string' && type.substr(0, 3) === '...') { // if it is rest parameter
