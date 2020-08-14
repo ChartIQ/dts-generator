@@ -170,7 +170,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
     if (!isDeprecated && Object.keys(types).length !== args.length) {
       console.log(
-        'Length of JSDoc parameters (' + Object.keys(types).length + ') ' +
+        'TSgen: Parameter length of JSDocs (' + Object.keys(types).length + ') ' +
         'and definition arguments (' + args.length + ') ' +
         'do not match for ' + memberof + ' ' + definition
       );
@@ -182,7 +182,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
       if (!isDeprecated && arg.replace(/^\.{3}/, '') !== name && arg !== "destructured") {
         console.log(
-          'Parameter ' + arg + ' in definition is not the same as in JSDoc ' + name +
+          'TSgen: Parameter ' + arg + ' in definition is not the same as in JSDoc ' + name +
           ' for the ' + memberof + ' ' + definition
         );
       }
