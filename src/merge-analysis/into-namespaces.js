@@ -73,7 +73,7 @@ function intoNamespaces(namespaces, theDefs) {
     if (path !== '' && namespace === null) {
       info(namespace, 'Namespace', `has no definition for members by ${path}, created automatically`);
       code =
-`namespace ${path} {
+`export namespace ${path} {
 ${members.map(c => tabLines(c.code)).join('\n\n')}
 }
 `;

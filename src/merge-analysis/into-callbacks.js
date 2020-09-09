@@ -21,9 +21,10 @@ function intoCallbacks(callbacks) {
   const result = [];
 
   for (const callback of callbacks) {
+    const { TSDef: [ name, returnType ], fields, comment  } = callback;
     const code =
-`${callback.comment}
-${callback.TSDef[0]}(${callback.fields.map(f => makeAttribute(f)).join(', ')}): ${callback.TSDef[1]}`;
+`${comment}
+${name.replace('function ', 'type ')} = (${ toParameters(fields)}) => ${returnType}`;
 
     result.push({
       area: callback.area,
@@ -39,6 +40,10 @@ ${callback.TSDef[0]}(${callback.fields.map(f => makeAttribute(f)).join(', ')}): 
 /**
  * @param {Property} field
  */
-function makeAttribute(field) {
-  return  `${field.name}${field.opt ? '?' : ''}: ${field.type}`;
+function toParameters(fields) {
+  return fields.map(f => makeAttribute(f)).join(', ');
+
+  function makeAttribute(field) {
+    return  `${field.name}${field.opt ? '?' : ''}: ${field.type}`
+  }
 }

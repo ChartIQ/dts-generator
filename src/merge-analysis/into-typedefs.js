@@ -44,9 +44,13 @@ ${type.fields.map(f => tabLines(makeField(f))).join('\n')}
  * @param {Property} field
  */
 function makeField(field) {
-  return '' +
-`/**
+  const description = field.description || field.value
+    ? `/**
  * ${field.description}
-${(field.value === null ? '' : ` * @default ${field.value}\n`)} */
-${field.name}${field.opt ? '?' : ''}: ${field.type}`;
+${(field.value === null ? '' : ` * @default ${field.value}\n`)} 
+ */
+`
+    : '';
+
+  return `${description}${field.name}${field.opt ? '?' : ''}: ${field.type}`;
 }

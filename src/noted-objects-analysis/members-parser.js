@@ -1,5 +1,11 @@
-const { groupBy, set } = require('lodash');
-const { fixType, cleanCommentData } = require('../common/common');
+const { groupBy, set, get } = require('lodash');
+const {
+  fixType,
+  cleanCommentData,
+  getParamParts,
+  combineDestructuredArguments,
+  getTSPropertyDef
+} = require('../common/common');
 
 /* Definition */
 module.exports = {
@@ -12,19 +18,49 @@ module.exports = {
  * @typedef {import('../common/interfaces').Definition} Definition
  */
 
+/**
+ * Regex that the will test if an expression is a function, arrow function, or function in class declaration.
+ * Used to determine whether an expression is a function
+ *
+ * **NOTE** Will not detect  inline arrow functions
+ * @type {RegExp}
+ */
+const aClassMethod = '(^\\s*(static){0,1}\\s*(?!if\\s)\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"
+const aFunction = '(function\\s*\\(.*\\))';
+const anArrowFunction = '(\\(.*\\)\\s*\\s*=>)';
+const isFunction = new RegExp(`${aClassMethod}|${aFunction}|${anArrowFunction}`);
+
+/**
+ * Regex that the will test if an expression is a named function.
+ * @type {RegExp}
+ */
+const namedFunction = new RegExp(/\w*(?=\s*\()/);
+
 /* Public */
 /**
  * Created TS code lines for each member
  * @param {Area[]} members
  */
-function createMembersTSDefs(members) {
+function createMembersTSDefs(
+  members, 
+  { 
+    includePrivate, 
+    expandPropertyDeclarationBasedOnDefault
+  } = {}) {
   /**
    * @type {Definition[]}
    */
   const result = [];
   for (const member of members) {
     const comment = member.comment;
-    const { TSDef, name } = setMemberDefinitions(member.definition, comment, member.modifiers);
+    if (/\* @private/.test(comment) && !includePrivate) continue;
+    const { TSDef, name } = setMemberDefinitions(
+      member.definition,
+      comment,
+      member.modifiers,
+      false,
+      expandPropertyDeclarationBasedOnDefault
+    );
     const path = member.value.split(/[\.\#]/g).filter(v => v);
 
     if (path.indexOf('prototype') + 1 === path.length) {
@@ -33,7 +69,7 @@ function createMembersTSDefs(members) {
 
     const definition = {
       area: member,
-      TSDef,
+      TSDef: member.tsdeclarationOverwrite ? [member.tsdeclarationOverwrite] : TSDef,
       comment: cleanCommentData(comment),
       path,
       name,
@@ -48,24 +84,31 @@ function createMembersTSDefs(members) {
  * Created TS code lines for class constructors
  * @param {Area[]} classes
  */
-function createConstructorsTSDefs(classes) {
+function createConstructorsTSDefs(classes, { expandPropertyDeclarationBasedOnDefault } = {}) {
   /**
    * @type {Definition[]}
    */
   const result = [];
 
   for (const constructor of classes) {
-    if (constructor.type !== 'class' || constructor.comment.includes('* @constructor') === false) {
+    const { value, type, modifiers, comment, tsdeclarationOverwrite }  = constructor;
+
+    if (type !== 'class' || comment.includes('* @constructor') === false) {
       continue;
     }
 
-    const comment = constructor.comment;
-    const { TSDef, name } = setMemberDefinitions(constructor.definition, comment, constructor.modifiers, true);
-    const path = constructor.value.split('.');
+    const { TSDef, name } = setMemberDefinitions(
+      constructor.definition,
+      comment,
+      modifiers,
+      true,
+      expandPropertyDeclarationBasedOnDefault
+    );
+    const path = value.split('.');
 
     const definition = {
       area: constructor,
-      TSDef,
+      TSDef: tsdeclarationOverwrite ? [tsdeclarationOverwrite] : TSDef,
       comment: cleanCommentData(comment),
       path,
       name,
@@ -83,19 +126,28 @@ function createConstructorsTSDefs(classes) {
  * @param {string[]} modifiers
  * @returns {{TSDef: string[], name: string}}
  */
-function setMemberDefinitions(definition, comment, modifiers, constructor = false) {
+function setMemberDefinitions(definition, comment, modifiers, constructor = false, expand) {
   const firstLine = definition.substring(0, definition.indexOf('\n')) || definition;
   let name = '';
   let value = '';
+  let isPropertyType = false;
+  const isDeprecated = /\* @deprecated/m.test(comment);
 
   if (constructor === true) {
     name = 'constructor';
     value = definition.substring(definition.indexOf('=') + 1);
   } else
+  // If in an object? Probably Object.defineProperty or object.definePropertie
   if (firstLine.indexOf(':') > -1 && (firstLine.indexOf('{') === -1 || firstLine.indexOf('{') > firstLine.indexOf(':'))) {
-    name = firstLine.substring(0, firstLine.indexOf(':')).trim();
-    value = definition.substring(definition.indexOf(':') + 1);
+    if (expand) {
+      isPropertyType = true;
+      ({ name, value } = getTSPropertyDef(definition));
+    } else {
+      name = firstLine.substring(0, firstLine.indexOf(':')).trim();
+      value = definition.substring(definition.indexOf(':') + 1);
+    }
   } else
+  // If setting value equal to function
   if (firstLine.indexOf('=') > -1) {
     name = firstLine.substring(
       firstLine.lastIndexOf('.', firstLine.indexOf('=')) + 1,
@@ -105,27 +157,86 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   }
 
   let tail = ''
-  const func = getFunc(firstLine);
-  if (typeof func === 'string') {
-    const args = func.split(',').map(f => f.trim()).filter(v => v);
+  if(constructor || (!isPropertyType && isFunction.test(firstLine))) {
+    let all = getArguments(firstLine);
+    all = combineDestructuredArguments(all);
+    const args = all.split(',')
+      .map(a => a.includes('=') ? a.substring(0, a.indexOf('=')).trim() : a.trim())
+      .filter(v => v);
+
     const types = getParams(comment);
-    const params = args.map(arg => types[arg] ? `${types[arg].name}${types[arg].opt ? '?' : ''}: ${types[arg].type}` : `${arg}: any`);
+    const typeArr = Object.keys(types);
+    const [, memberof] = /memberof (.*)/.exec(comment) || [];
+
+    if (!isDeprecated && Object.keys(types).length !== args.length) {
+      console.log(
+        'TSgen: Parameter length of JSDocs (' + Object.keys(types).length + ') ' +
+        'and definition arguments (' + args.length + ') ' +
+        'do not match for ' + memberof + ' ' + definition
+      );
+    }
+
+    const params = args.reduce((acc, arg, index) => {
+      const typeObj = types[typeArr[index]];
+      let { name, type, opt } = typeObj || {};
+
+      if (!isDeprecated && arg.replace(/^\.{3}/, '') !== name && arg !== "destructured") {
+        console.log(
+          'TSgen: Parameter ' + arg + ' in definition is not the same as in JSDoc ' + name +
+          ' for the ' + memberof + ' ' + definition
+        );
+      }
+
+      if (typeof type === 'string' && type.substr(0, 3) === '...') { // if it is rest parameter
+        type = type.replace('...', '') + '[]';
+        name = '...' + name;
+      }
+
+      // Check the next index. If it is NOT optional, then this param cannot be optoinal.
+      // Instead make it a union type with undefined
+      if (opt && typeArr[index+1] && !typeArr[index+1].opt) {
+        opt = false
+        type = (type instanceof Object && !Array.isArray(type)) ? `${JSON.stringify(type)} | undefined` : `${type} | undefined`
+      }
+
+      return {...acc, [(name || arg) + (opt ? '?' : '')]: type ? type : 'any' };
+    }, {});
     const returns = getReturns(comment);
 
-    tail = `(${params.join(', ')})`;
+    if(!name.length && !types.length) name = namedFunction.exec(firstLine)[0];
 
-    if (constructor === false) {
+    tail = `(${outputParams(params)})`;
+
+    if (constructor === false && name !== 'constructor') {
       tail += `: ${returns}`;
     }
   } else
   if (comment.includes('* @type')) {
     const type = getFieldType(comment);
     if (type !== '') {
-      tail = `: ${type}`;
+      tail = `: ${
+        isPropertyType && value && value !== '{}'
+          ? type.replace(/object/, value)
+          : type
+      }`;
     }
   }
 
   return { TSDef: [`${modifiers.join(' ')} ${name}${tail}`.trim()], name };
+
+  function outputParams(params) {
+    let paramStr = Object.keys(params).length ? JSON.stringify(params) : '';
+    if (paramStr.length > 80) {
+      paramStr = JSON.stringify(params, null, 2);
+    }
+    else {
+      paramStr = paramStr.replace(/(\:|,)/g, '$1 ');
+    }
+    paramStr = paramStr.replace(/\"/g, '').replace(/\\/g, '');
+    paramStr = paramStr.substring(1, paramStr.length - 1);
+    
+    return paramStr;
+  }
 }
 
 /**
@@ -140,6 +251,10 @@ function getFunc(firstLine) {
   }
 
   return false
+}
+
+function getArguments(expression) {
+  return expression.substring(expression.indexOf('(')+1, expression.indexOf(')'));
 }
 
 /**
@@ -159,24 +274,14 @@ function getParams(comment) {
   let pos = -1
   while ((pos = comment.indexOf('@param', pos + 1)) > -1) {
     const paramStr = comment.substring(pos, comment.indexOf('\n', pos));
-    const deconstruction = /\{(.*?:)?(.*?)\}\s*([A-z0-9\_\.]+)/g.exec(paramStr);
+    const { type, isOptional, name, defaultValue } = getParamParts(paramStr);
 
-    if (deconstruction && deconstruction.length === 4) {
-      let type = fixType(deconstruction[2].trim());
-      let name = deconstruction[3].trim();
-      let opt = false;
-
-      if (name[0] === '[') {
-        name = name.substr(1, name.length - 2);
-        opt = true;
-      }
-
-      const el = {
-        type,
+    if (type) {
+      const el = { 
+        type: fixType(type),
         name,
-        opt,
+        opt: isOptional
       };
-
       params.push(el);
       if (name.includes('.') === false) {
         result[name] = el;
@@ -194,15 +299,40 @@ function getParams(comment) {
     const nodes = parented[name];
 
     const type = {};
+    
     for (const node of nodes) {
-      set(type, node.name.substring(name.length + 1) + (node.opt ? '?' : ''), node.type);
+      set(type, node.name, node.type);
     }
-    const stype = JSON.stringify(type).replace(/\"/g, '').replace(/:/g, ': ');
-    result[name].type = stype;
+    
+    const reParentChild = /(.*)(\.)([^.]*$)/;
+
+    // Update optional keys
+    const removeUpdated = [];
+    nodes
+      .filter(({ opt }) => opt) 
+      .forEach((node) => {
+        const [, parentPath, , key] = reParentChild.exec(node.name);
+        const parentObj = get(type, parentPath);
+        parentObj[key + '?'] = parentObj[key];
+        removeUpdated.push([parentObj, key]);
+      });
+    removeUpdated.forEach(([obj, key]) => { delete obj[key]; });
+
+    // const stype = JSON.stringify(type[name], null, '\t').replace(/\"/g, '');
+    result[name].type = type[name];
   }
 
   return result;
 }
+
+/**
+ * Used to check whether or not a type definition includes an optional or default type.
+ * @param {string} check Section of JSDoc comment to check. Should either be the type annotation or name.
+ * @see https://jsdoc.app/tags-type.html
+ */
+function isOptional(check) {
+  return check.includes('=') || check.includes('[');
+};
 
 /**
  * @param {string} comment

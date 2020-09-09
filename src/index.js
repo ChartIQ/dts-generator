@@ -42,12 +42,12 @@ function main(){
   const { fileFrom, fileTo, debug } = getArgs();
 
   // Get JS file as a string
-  const dataFrom = readFileSync(fileFrom).toString();
+  const dataIn = readFileSync(fileFrom).toString()
 
-  const dataTo = generate(dataFrom, defaultConfig);
+  const dataOut = generate(dataIn, defaultConfig);
 
   // Write to file returned string
-  writeFileSync(fileTo, dataTo);
+  writeFileSync(fileTo, dataOut);
 
   console.info(`File ${basename(fileTo)} sucessfully created.`);
 
@@ -121,27 +121,76 @@ function getArgs() {
  * @returns {string}
  */
 function generate(dataFrom, config = defaultConfig) {
-  config = Object.assign({}, defaultConfig, config);
+  const {
+    preprocessing,
+    postprocessing,
+    importTagName,
+    exportTagName,
+    includePrivate,
+    expandPropertyDeclarationBasedOnDefault
+  } = config;
+
+  // Do any preprocessing on the data before we start parsing
+  if(preprocessing) dataFrom = preprocessing(dataFrom);
 
   // Grab all required comments into grouped objects
   const notedObjects = collectAllNotedObjects(dataFrom);
 
   // Convert the data into something that could be used as a defenition
-  const members = createMembersTSDefs(notedObjects.members);
-  const constructors = createConstructorsTSDefs(notedObjects.nameds);
-  const namespaces = createNamespacesTSDefs(notedObjects.nameds);
-  const classes = createClassesTSDefs(notedObjects.nameds);
+  const members = createMembersTSDefs(notedObjects.members, {
+    includePrivate, expandPropertyDeclarationBasedOnDefault
+  });
+  const constructors = createConstructorsTSDefs(notedObjects.names, {
+    expandPropertyDeclarationBasedOnDefault
+  });
+  const namespaces = createNamespacesTSDefs(notedObjects.names);
+  const classes = createClassesTSDefs(notedObjects.names);
   const types = createTypedefsTSDefs(notedObjects.types);
   const callbacks = createCallbacksTSDefs(notedObjects.types);
-  const module = createModuleTSDefs(notedObjects.module, config.importTagName);
+  const module = createModuleTSDefs(notedObjects.module, importTagName, exportTagName);
 
   // Include declarations into each other and get a strings
   const classDefs = intoClasses(classes, [...constructors, ...members]);
   const typeDefs = intoTypedefs(types);
   const callbacksDefs = intoCallbacks(callbacks);
-  const namespaceDefs = intoNamespaces(namespaces, [...typeDefs, ...callbacksDefs, ...classDefs]);
+  const namespaceDefs = intoNamespaces(namespaces, [
+    ...typeDefs,
+    ...callbacksDefs,
+    ...classDefs,
+    ...classStaticMembersToNamespaceFunctions(members)
+  ]);
   const moduleDefs = intoModules(module, namespaceDefs);
 
   // Join all into one TS declarations file and save it
-  return moduleDefs.map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
+  let definitions = moduleDefs.map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
+
+  if(postprocessing) definitions = postprocessing(definitions, dataFrom);
+  return definitions
+}
+
+/**
+ * @typedef {import('../common/interfaces').Definition} Definition
+ */
+
+/**
+ * 
+ * @param {Definition[]} members 
+ * @return {Definition[]}
+ */
+function classStaticMembersToNamespaceFunctions(members) {
+  return members
+    .filter(member => /^public static \w*?\s*\(|^function\s*/.test(member.TSDef[0]))
+    .map((member) => {
+      const { area, area: { tsdeclarationOverwrite }, comment, name, path, TSDef: [definition]} = member;
+      // member.TSDef[0] = member.TSDef[0].replace(/^public static /, 'function ');
+      return {
+        area,
+        path,
+        comment,
+        code: `${comment}\n${
+          tsdeclarationOverwrite ||
+          definition.replace(/^public static /, 'function ')
+        }`
+      };
+    });
 }

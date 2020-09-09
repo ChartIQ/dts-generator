@@ -1,9 +1,12 @@
 {
   "name": "dts-gen",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "TSDeсGen is the script to convert some JSDoc to TS declarations",
   "main": "./src/index.js",
   "scripts": {
+    "example:simple": "node src/index.js -f examples/simple.js -t examples/simple.d.ts -c src/config.js",
+    "example:prototypes": "node src/index.js -f examples/prototypes.js -t examples/prototypes.d.ts -c src/config.js",
+    "example:properties": "node src/index.js -f examples/properties.js -t examples/properties.d.ts -c src/config.js",
     "start": "node ./src/index.js",
     "test": "mocha --recursive"
   },

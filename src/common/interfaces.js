@@ -10,6 +10,7 @@ module.exports = {};
  * @property {string} definition
  * @property {string[]} modifiers
  * @property {string} [type]
+ * @property {string} tsdeclarationOverride
  */
 
 /**

@@ -3,6 +3,8 @@ module.exports = {
   collectAllNotedObjects,
 };
 
+const { getDefinition, getTSDeclaration, clearTSDeclaration } = require('../common/common');
+
 /**
  * @typedef {import('../common/interfaces').Area} Area
  * @typedef {import('../common/interfaces').NotedObjects} NotedObjects
@@ -16,7 +18,7 @@ module.exports = {
  */
 function collectAllNotedObjects(data) {
   // Collect all namespaces into collection
-  const nameds = classifyNamedObjects(getCommentAreas(data, '* @name '));
+  const names = classifyNamedObjects(getCommentAreas(data, '* @name '));
 
   // Collect all callback, typedef
   const types = [
@@ -36,7 +38,7 @@ function collectAllNotedObjects(data) {
   const module = getCommentAreas(data, '* @module');
 
   return {
-    nameds,
+    names,
     types,
     members,
     module,
@@ -63,17 +65,18 @@ function getCommentAreas(data, tag, extention = {}, isDefinitionRequired = true)
     const startCommentPos = data.lastIndexOf('/**', pos);
     const endCommentPos = data.indexOf('*/', pos) + 2;
     const comment = data.substring(startCommentPos, endCommentPos);
+    const tsdeclarationOverwrite = getTSDeclaration(comment);
     const value = data.substring(pos + tag.length, data.indexOf('\n', pos)).trim();
-    const definition = data.substring(endCommentPos + 1, data.indexOf(';\n', endCommentPos + 1)).trim();
+    const definition = getDefinition(data.substring(endCommentPos + 1)).match;
 
     const area = {
       startCommentPos,
       endCommentPos,
-      comment,
+      comment: clearTSDeclaration(comment),
       value,
       definition: isDefinitionRequired ? definition : '',
       modifiers: [],
-
+      tsdeclarationOverwrite,
       ...extention,
     }
     result.push(area);
@@ -83,12 +86,12 @@ function getCommentAreas(data, tag, extention = {}, isDefinitionRequired = true)
 }
 
 /**
- * @param {Area[]} nameds
+ * @param {Area[]} names
  */
-function classifyNamedObjects(nameds) {
+function classifyNamedObjects(names) {
   const result = [];
 
-  for (const named of nameds) {
+  for (const named of names) {
     // if (named.comment.includes(' @namespace')) {
     //   result.push({ ...named, type: 'namespace' });
     // }
@@ -111,6 +114,10 @@ function classifyNamedObjects(nameds) {
  */
 function applyMemberRoles(members, data) {
   const result = [];
+  const isClassMethod = definition => {
+    const [, name] = /^\s*(\w*)\s*\(/.exec(definition) || [];
+    return name && name !== 'if';
+  };
 
   for (const member of members) {
     const _member = { ...member }
@@ -122,14 +129,20 @@ function applyMemberRoles(members, data) {
     }
 
     if (
-      member.definition.includes('.prototype.') === false &&
-      member.value.includes('.prototype') === false &&
-      member.value[member.value.length - 1] !== '#'
+      /^\s*static\s/.test(member.definition) ||
+      (
+        member.definition.includes('.prototype.') === false &&
+        member.value.includes('.prototype') === false &&
+        member.value[member.value.length - 1] !== '#' &&
+        !member.comment.includes(' @instance') &&
+        !isClassMethod(member.definition)
+      )
     ) {
       _member.modifiers.push('static');
     }
 
-    if (member.definition.includes('function')) {
+    // (\(.*\)\s*=>)|\b\s*\(\s*\)|(function)
+    if (/(\(.*\))|(\(.*\)\s*\s*=>)/.test(member.definition)) {
       _member.type = 'method';
     } else {
       _member.type = 'field';

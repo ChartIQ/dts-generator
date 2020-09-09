@@ -18,7 +18,7 @@ module.exports = {
  * @param {Area[]} areas
  * @param {string} tImportName
  */
-function createModuleTSDefs(areas, tImportName) {
+function createModuleTSDefs(areas, tImportName, tExportName) {
   /**
    * @type {Definition[]}
    */
@@ -32,12 +32,13 @@ function createModuleTSDefs(areas, tImportName) {
     const comment = area.comment;
     const name = area.value;
     const timports = getTImports(area.comment, tImportName);
-    const TSDef = [`declare module '${name}'`, ...timports];
+    const texports = getTExports(area.comment, tExportName);
+    const TSDef = [`declare module '${name}'`, ...timports, ...texports];
 
     result.push({
       area,
       TSDef,
-      comment: cleanCommentData(comment, ['* @module', `* @${tImportName}`]),
+      comment: cleanCommentData(comment, ['* @module', `* @${tImportName}`, `* @${tExportName}`]),
       name,
       path: [],
     });
@@ -61,6 +62,28 @@ function getTImports(comment, tImportName) {
   while ((pos = comment.indexOf(`@${tImportName}`, pos + 1)) > -1) {
     const timportStr = comment.substring(pos, comment.indexOf('\n', pos));
     const importLine = `import ${timportStr.substring(`@${tImportName}`.length).trim()}`;
+
+    result.push(importLine);
+  }
+
+  return result;
+}
+
+/* Private */
+/**
+ * @param {string} comment
+ * @param {string} tExportName
+ */
+function getTExports(comment, tExportName) {
+  /**
+   * @type {string[]}
+   */
+  const result = [];
+
+  let pos = -1
+  while ((pos = comment.indexOf(`@${tExportName}`, pos + 1)) > -1) {
+    const texportStr = comment.substring(pos, comment.indexOf('\n', pos));
+    const importLine = `export ${texportStr.substring(`@${tExportName}`.length).trim()}`;
 
     result.push(importLine);
   }

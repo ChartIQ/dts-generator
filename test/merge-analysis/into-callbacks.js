@@ -17,7 +17,7 @@ describe('into-callbacks.js', () => {
 
       expect(result.length).eql(1);
       expect(result[0].area).eql(source[0].area);
-      expect(result[0].code.indexOf('function Foo(')).not.eql(-1);
+      expect(result[0].code.indexOf('type Foo = (')).not.eql(-1);
     });
     it('have all required attrs', () => {
       const source = [{

@@ -18,7 +18,8 @@ declare module './main' {
 
       expect(result).eql(target);
     });
-    it('wirk with default config', () => {
+
+    it('work with default config', () => {
       const source = `/**
  * @module ./main
  * @timport { Main } from './main'
@@ -26,9 +27,10 @@ declare module './main' {
       const target = `import { Main } from './main'
 declare module './main' {
 
-}`;
+}
+`;
 
-      const result = generate(source, { });
+      const result = generate(source);
 
       expect(result).eql(target);
     });

@@ -43,9 +43,12 @@ function intoClasses(classes, members) {
   for (const member of members) {
     const path = member.path.join('.');
     if (pairs[path] === undefined) {
-      info(member, 'Class member', `Path ${path} not defined`);
+      info(member, 'Class member', `name ${member.name} attached to not defined path of ${path}`);
       continue;
     }
+
+    // do not add static members, add them to namespace
+    if (/^public static \w*?\s*\(|function/.test(member.TSDef[0])) continue;
 
     pairs[path].members.push(member);
   }
@@ -53,7 +56,7 @@ function intoClasses(classes, members) {
   // Generate the class code
   for (const pair of values(pairs)) {
     if (pair.members.length === 0) {
-      info(pair.class, 'Class', `has no defined members by ${pair.path}`);
+      info(pair.class, 'Class', `path ${pair.path} has no defined members`);
     }
 
     const code =
