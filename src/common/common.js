@@ -41,6 +41,9 @@ function cleanCommentData(comment, skipAdditional = []) {
     '* @typedef',
     '* @type',
     '* @property',
+    '* @default',
+    '* @alias',
+    '* @inner',
   ];
   const toSkip = [...skipDefaults, ...skipAdditional];
 
