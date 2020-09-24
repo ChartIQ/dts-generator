@@ -86,9 +86,12 @@ function cleanCommentData(comment, skipAdditional = []) {
  * @returns {string}
  */
 function fixType(type) {
-  return type.replace(/\s*((external:)?(\w|\.|~|\*)+)\s*/g, coerce);
+  return type.replace(/\s*((external:)?(\w|\.|~|#|\*)+)\s*/g, coerce);
 
   function coerce(type) {
+    if (/\.prototype\.|\w#/.test(type)) {
+      type = 'typeof ' + type;
+    }
     type = type
       .replace('~', '.')
       .replace('#', '.prototype.')

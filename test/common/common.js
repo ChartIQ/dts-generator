@@ -230,7 +230,21 @@ describe('common.js', () => {
 
       const result = source.map(fixType);
       expect (result).eql(target)
-    })
+    });
+    it('converts a reference to .prototype. property with a property reference prefixed with typeof', () => {
+      const source = ['Custom.prototype.foo'];
+      const target = ['typeof Custom.prototype.foo'];
+
+      const result = source.map(fixType);
+      expect (result).eql(target)
+    });
+    it('converts class property type using # with property reference prefixed with typeof', () => {
+      const source = ['Custom#foo'];
+      const target = ['typeof Custom.prototype.foo'];
+
+      const result = source.map(fixType);
+      expect (result).eql(target)
+    });
   });
 
   describe('getDefinition', () => {
