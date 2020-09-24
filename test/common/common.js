@@ -328,15 +328,21 @@ describe('common.js', () => {
         expected: { type: 'Foo.Bar', isOptional: true, name: 'config.bar', defaultValue: '200' },
       },
       {
+        name: 'should process JSDoc Object.<..., ...> notation',
+        input: '@param {Object.<string, Foo.Bar>} [params] Some config object',
+        expected: { type: 'Record<string, Foo.Bar>', isOptional: true, name: 'params', defaultValue: '' },
+      },
+      {
         name: 'should not crash on misonfigured parameter',
         input: '@param ///',
-        expected: { type: undefined, isOptional: false, name: undefined, defaultValue: '' },
+        expected: undefined,
       },
     ];
 
     testCases.forEach(({ name, input, expected }) => {
       it(name, () => {
         const result = getParamParts(input);
+
         expect(result).eql(expected);
       });
     });
