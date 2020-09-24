@@ -2,7 +2,11 @@ module.exports = {
   importTagName: 'timport',
   exportTagName: 'texport',
   preprocessing: function (data) {
-    return data.replace(/CIQ\.ChartEngine\.AdvancedInjectable/gm, 'CIQ.ChartEngine');
+    return (
+      data
+        .replace(/CIQ\.ChartEngine\.AdvancedInjectable/gm, 'CIQ.ChartEngine')
+        .replace(/@memberof!/gim, '@memberof')
+      );
   },
   postprocessing: function(data, source) {
     const exported = [];
