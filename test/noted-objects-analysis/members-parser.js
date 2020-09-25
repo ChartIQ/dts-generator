@@ -140,10 +140,34 @@ describe('members-parser.js', () => {
 
       const result = createMembersTSDefs(source);
 
-      console.log(result[0].TSDef[0]);
-
       expect(result[0].TSDef).eql([
         "public static concat(first: string, ...others: string[]): string"
+      ])
+    });
+
+    it('process class extension with methods using functions in object property', ()=> {
+      const source = [
+        {
+          startCommentPos: 1,
+          endCommentPos: 359,
+          comment: 
+`/**
+ * A function in object property
+ *
+ * @param {string} bar Bar parameter
+ * @return {string}
+ * @memberof Foo`,
+          value:  'Foo',
+          definition: 'extendedClassMethod: function(bar) {)}',
+          modifiers: ['public'],
+          type: 'method'
+        }
+      ]
+
+      const result = createMembersTSDefs(source);
+
+      expect(result[0].TSDef).eql([
+        "public extendedClassMethod(bar: string): string"
       ])
     });
   });

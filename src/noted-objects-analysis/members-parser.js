@@ -132,13 +132,19 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   let value = '';
   let isPropertyType = false;
   const isDeprecated = /\* @deprecated/m.test(comment);
+  const [, propertyFunctionName] = /\s*(\w*):\s*function/
+    .exec(firstLine) || [];
 
   if (constructor === true) {
     name = 'constructor';
     value = definition.substring(definition.indexOf('=') + 1);
   } else
   // If in an object? Probably Object.defineProperty or object.definePropertie
-  if (firstLine.indexOf(':') > -1 && (firstLine.indexOf('{') === -1 || firstLine.indexOf('{') > firstLine.indexOf(':'))) {
+  if (
+    !propertyFunctionName && 
+    firstLine.indexOf(':') > -1 && 
+    (firstLine.indexOf('{') === -1 || firstLine.indexOf('{') > firstLine.indexOf(':'))
+  ) {
     if (expand) {
       isPropertyType = true;
       ({ name, value } = getTSPropertyDef(definition));
@@ -203,7 +209,9 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     }, {});
     const returns = getReturns(comment);
 
-    if(!name.length && !types.length) name = namedFunction.exec(firstLine)[0];
+    if(!name.length && !types.length) {
+      name = propertyFunctionName || namedFunction.exec(firstLine)[0];
+    }
 
     tail = `(${outputParams(params)})`;
 
