@@ -184,7 +184,7 @@ function getDefinition(content) {
     ;
   } else { // handle that definition is a property assignment
     ([, name, value] = content.match(/\s*(\w*):\s*(\w*)/) || []);
-    def = name && (name + ": " + values) || undefined;
+    def = name && (name + ": " + value) || undefined;
   }
   const isFunction = def && /(\bfunction\b|=>)/.test(def);
   return { match: def, isFunction }
