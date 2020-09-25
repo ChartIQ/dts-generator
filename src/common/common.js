@@ -201,7 +201,7 @@ function getParamParts(content) {
       + '(' // Get type
       +   /\{(Object\.<\w*,\s*[^>]*>)\}/.source // Hashmap type {Object.<string, { name: string}>}
       +   '|'
-      +   /\{([\w\s|.#~]*?)\}/.source // Simple or union type, match word space or | lazy
+      +   /\{([\w\s:|.#~]*?)\}/.source // Simple or union type, match word space or | lazy
       + ')' // End get type
       + /\s*(\[?)\s*/.source // Optional start bracket if exists
       + /([\w\.]*)/.source // Parametr name
