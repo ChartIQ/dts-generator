@@ -183,7 +183,7 @@ function getDefinition(content) {
     .replace(/ \)/g, ')')
     ;
   } else { // handle that definition is a property assignment
-    ([, name, value] = content.match(/\s*(\w*):\s*(\w*)/) || []);
+    ([, name, value] = content.match(/\s*(\w*):\s*("[^"]*"|'[^']*'|`[^`]*`|[\w\d.]*)/) || []);
     def = name && (name + ": " + value) || undefined;
   }
   const isFunction = def && /(\bfunction\b|=>)/.test(def);
