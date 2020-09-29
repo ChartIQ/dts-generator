@@ -201,7 +201,7 @@ function getParamParts(content) {
       + '\\{\\(?((' // Get type as combination of
       +   /Object\.<\w*,\s*[^>]*>/.source // Hashmap type {Object.<string, { name: string}>}
       +   '|'
-      +   /[\w\s:.#~]/.source // Simple type, Class member reference, external: reference
+      +   /[\w\s:.#~]*\[?\]?/.source // Simple type, Class member reference, external: reference, array type []
       +   '|'
       +   '\\*' // Any type
       +   '|'
