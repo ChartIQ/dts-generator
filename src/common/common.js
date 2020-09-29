@@ -203,6 +203,8 @@ function getParamParts(content) {
       +   '|'
       +   /[\w\s:.#~]/.source // Simple type, Class member reference, external: reference
       +   '|'
+      +   '\\*' // Any type
+      +   '|'
       +   '\\|' // | in union type
       + ')*)\\)?\\}' //End get type
       + /\s*(\[?)\s*/.source // Optional start bracket if exists
