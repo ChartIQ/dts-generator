@@ -234,7 +234,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
   function outputParams(params) {
     let paramStr = Object.keys(params).length ? JSON.stringify(params) : '';
-    if (paramStr.length > 80) {
+    if (paramStr.length > 70) {
       paramStr = JSON.stringify(params, null, 2);
     }
     else {
@@ -357,7 +357,7 @@ function getReturns(comment) {
       if (type.includes('#')) {
         type = type.substring(0, type.indexOf('#'))
       }
-      return type;
+      return type.replace(/Object\./g, 'Record');
     }
   }
 
