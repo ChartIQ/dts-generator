@@ -1,6 +1,7 @@
 /* Definition */
 module.exports = {
   collectAllNotedObjects,
+  getCommentAreas
 };
 
 const { getDefinition, getTSDeclaration, clearTSDeclaration } = require('../common/common');

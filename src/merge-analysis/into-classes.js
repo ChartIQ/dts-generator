@@ -39,13 +39,21 @@ function intoClasses(classes, members) {
     };
   }
 
+  const membersLookup = {};
   // Fill class members fill in aligned pairs
   for (const member of members) {
     const path = member.path.join('.');
     if (pairs[path] === undefined) {
-      info(member, 'Class member', `name ${member.name} attached to not defined path of ${path}`);
+      if (!membersLookup[path]) { 
+        // Inform only if there is no member either with this path
+        // Object properties containing JSDocs are processed separately
+        info(member, 'class member', `name ${member.name} @memberof parameter has not defined object path of "${path}"`);
+      }
       continue;
     }
+    membersLookup[member.path.concat(member.name).join('.')] = member; 
+    // do not add static members, add them to namespace
+    if (/^public static \w*?\s*\(|^\s*function/.test(member.TSDef[0])) continue;
 
     // do not add static members, add them to namespace
     if (/^public static \w*?\s*\(|function/.test(member.TSDef[0])) continue;

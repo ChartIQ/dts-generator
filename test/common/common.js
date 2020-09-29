@@ -230,7 +230,21 @@ describe('common.js', () => {
 
       const result = source.map(fixType);
       expect (result).eql(target)
-    })
+    });
+    it('converts a reference to .prototype. property with a property reference prefixed with typeof', () => {
+      const source = ['Custom.prototype.foo'];
+      const target = ['typeof Custom.prototype.foo'];
+
+      const result = source.map(fixType);
+      expect (result).eql(target)
+    });
+    it('converts class property type using # with property reference prefixed with typeof', () => {
+      const source = ['Custom#foo'];
+      const target = ['typeof Custom.prototype.foo'];
+
+      const result = source.map(fixType);
+      expect (result).eql(target)
+    });
   });
 
   describe('getDefinition', () => {
@@ -314,9 +328,14 @@ describe('common.js', () => {
         expected: { type: 'Foo.Bar', isOptional: true, name: 'config.bar', defaultValue: '200' },
       },
       {
+        name: 'should process JSDoc Object.<..., ...> notation',
+        input: '@param {Object.<string, Foo.Bar>} [params] Some config object',
+        expected: { type: 'Record<string, Foo.Bar>', isOptional: true, name: 'params', defaultValue: '' },
+      },
+      {
         name: 'should not crash on misonfigured parameter',
         input: '@param ///',
-        expected: { type: undefined, isOptional: false, name: undefined, defaultValue: '' },
+        expected: undefined,
       },
     ];
 

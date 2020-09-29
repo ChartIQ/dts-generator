@@ -8,8 +8,13 @@ module.exports = {
   getTSDeclaration,
   clearTSDeclaration,
   combineDestructuredArguments,
-  getTSPropertyDef
-}
+  getObjectDef
+};
+
+const { values } = require('lodash');
+
+// Cache for lazy evaluated regExpressions
+const g_re = {};
 
 /* Public */
 /**
@@ -41,6 +46,9 @@ function cleanCommentData(comment, skipAdditional = []) {
     '* @typedef',
     '* @type',
     '* @property',
+    '* @default',
+    '* @alias',
+    '* @inner',
   ];
   const toSkip = [...skipDefaults, ...skipAdditional];
 
@@ -86,9 +94,12 @@ function cleanCommentData(comment, skipAdditional = []) {
  * @returns {string}
  */
 function fixType(type) {
-  return type.replace(/\s*((external:)?(\w|\.|~|\*)+)\s*/g, coerce);
+  return type.replace(/\s*((external:)?(\w|\.|~|#|\*|<|>)+)\s*/g, coerce);
 
   function coerce(type) {
+    if (/\.prototype\.|\w#/.test(type)) {
+      type = 'typeof ' + type;
+    }
     type = type
       .replace('~', '.')
       .replace('#', '.prototype.')
@@ -150,46 +161,66 @@ function getDefinition(content) {
     return { match: preObj + objDef, isFunction: false };
   }
 
-  const extractUntil = "([\\s\\S]*?)";
-  const untilSettings = [
-    ";", // statement end
-    "\\)\\s*\\{", // function signature end
-    "\\)\\s+=>", // arrow function signature end
-    "\\/\\*\\*"  // beggining of next comment in case of property assignment : {
-  ];
-  const re = new RegExp(`${extractUntil}(${untilSettings.join('|')})`);
-
-  let [, def, end] = content.match(re) || [];
-  if (end && end.charAt(0) === ')') def += end.replace(/\s*\{/, '');
-  const isFunction = def && /(\bfunction\b|=>)/.test(def);
-  if (def) {
-      def = def
-        .trim()
-        .replace(/\n|\n\r/g, '')
-        .replace(/\s{2,}/g, ' ')
-        .replace(/\( /g, '(')
-        .replace(/ \)/g, ')')
-        ;
+  if (!g_re['getDefinition']) {
+    const extractUntil = "([\\s\\S]*?)";
+    const untilSettings = [
+      ";", // statement end
+      "\\)\\s*\\{", // function signature end
+      "\\)\\s+=>", // arrow function signature end
+      "\\/\\*\\*"  // beggining of next comment in case of property assignment : {
+    ];
+    g_re['getDefinition'] = new RegExp(`${extractUntil}(${untilSettings.join('|')})`);
   }
+
+  let [, def, end] = content.match(g_re['getDefinition']) || [];
+  if (end && end.charAt(0) === ')') def += end.replace(/\s*\{/, '');
+  if (def) {
+    def = def
+    .trim()
+    .replace(/\n|\n\r/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\( /g, '(')
+    .replace(/ \)/g, ')')
+    ;
+  } else { // handle that definition is a property assignment
+    ([, name, value] = content.match(/\s*(\w*):\s*("[^"]*"|'[^']*'|`[^`]*`|[\w\d.]*)/) || []);
+    def = name && (name + ": " + value) || undefined;
+  }
+  const isFunction = def && /(\bfunction\b|=>)/.test(def);
   return { match: def, isFunction }
 }
 
 /**
  * Given JSDoc parameter string extract parameter type, name, isOptional and defaultValue
  * @param {string} content
- * @returns {string}
+ * @returns {{ type: string, isOptional: boolean, name: string, defaultValue: string }|undefined}
  */
 function getParamParts(content) {
-  const d = { // RegEx definition parts
-    type: '\\{(.*?)\\}',
-    optional: '\\s*(\\[?)\\s*',
-    name: '([\\w\\.]*)',
-    defaultValue: '\\s*(\\=?)\\s*([^\\]]*)'
+  if (!g_re['getParamParts']) {
+    g_re['getParamParts'] = new RegExp(''
+      + '\\{\\(?((' // Get type as combination of
+      +   /Object\.<\w*,\s*[^>]*>/.source // Hashmap type {Object.<string, { name: string}>}
+      +   '|'
+      +   /[\w\s:.#~]*\[?\]?/.source // Simple type, Class member reference, external: reference, array type []
+      +   '|'
+      +   '\\*' // Any type
+      +   '|'
+      +   '\\|' // | in union type
+      + ')*)\\)?\\}' //End get type
+      + /\s*(\[?)\s*/.source // Optional start bracket if exists
+      + /([\w\.]*)/.source // Parametr name
+      + /\s*(\=?)\s*([^\]]*)/.source // Default value if exists
+    );
   }
-  const re = new RegExp(d.type + d.optional + d.name + d.defaultValue);
 
-  const [, type, optional, name, , value ] = re.exec(content) || [];
-  return { type, isOptional: !!optional, name, defaultValue: optional ? value : '' };
+  const [isMatch, type, , optional, name, , value ] = g_re['getParamParts'].exec(content) || [];
+  if (!isMatch) return;
+  return { 
+    type: type.replace(/Object./g, 'Record'),
+    isOptional: !!optional,
+    name,
+    defaultValue: optional ? value : '' 
+  };
 }
 
 /**
@@ -232,43 +263,24 @@ function clearTSDeclaration(comment) {
  * @returns {string} returns content with destructurning replaced with placeholder
  */
 function combineDestructuredArguments(argumentStr, placeholder = 'destructured') {
-  const re = /(?<=(^\s*|,\s*))\{[\s\S]*?}/g;
+  // const re = /\{(?:[^)(]+|\{(?:[^)(]+|\{[^)(]*\})*\})*\}/g;
+  // 5 level deep matching {}, to have more levels use 
+  re = new RegExp(
+    '{([^{}]*|' + // opening level 1
+    '{([^{}]*|' + // 2
+    '{([^{}]*|' + // 3
+    '{([^{}]*|' + // 4
+    '{([^{}])*' + // level 5, reversing
+    '})*' + // closing level 5
+    '})*' + // 4
+    '})*' + // 3
+    '})*' + // 2
+    '}' // 1
+  )
 
   return argumentStr.replace(re, placeholder);
 }
 
-/**
- * Get Typescript property definition defined as
- * propertyName: 'Foo'
- * or
- * propertName: {
- *  foo: 'one',
- *  bar: true
- * }
- * @param {string} str
- * @return {string}
- * @example
- * propertName: {
- *  foo: 'one',
- *  bar: 'two',
- *  fn() {}
- * }
- * converts to 
- * propertyName: {
- *  foo: string,
- *  bar: boolean,
- *  fn: Function
- * }
- */
-function getTSPropertyDef(str) {
-  const [name, ...objStr] = str.split(/:\s*/);
-  const objDefStr = objStr.join(': ');
-  if (!objDefStr) return;
-  const def = getObjectDef(objDefStr);
-  const obj = toObject(def || objDefStr);
-  const value = toTSDeclaration(obj);
-  return { name, value };
-}
 
 /**
  * Get object definition string - content between matching opening "{" and closing "}"
@@ -294,40 +306,5 @@ function getObjectDef(str) {
       return output.join('');
     } 
     cnt++;
-  }
-}
-
-/**
- * Converts object definition string to object
- * Expect string like { foo: "one", bar: true }
- * @param {string} str
- * @return {object}
- */
-function toObject(str) {
-  if (!str) return;
-  try {
-    eval('var o = ' + str);
-    return o; 
-  } catch(err) {}
-}
-
-/**
- * Converts object to typescript declaration using typeof to detect property value
- * @param {object} obj
- * @return {string}
- */
-function toTSDeclaration(obj) {
-  if (obj === undefined) return;
-  return JSON.stringify(getObj(obj), null, 2).replace(/\"/g, '');
-
-  function getObj(obj) {
-    if (obj === null) return 'null';
-    if (typeof obj !== 'object') return typeof obj;
-    return Object.entries(obj)
-      .reduce((acc, [key, value]) => {
-        let type = (typeof value).replace('function', 'Function');
-        if (type === 'object') type = getObj(value);
-        return { ...acc, [key]: type };
-      }, {});
   }
 }

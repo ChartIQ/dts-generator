@@ -4,7 +4,7 @@ const {
   cleanCommentData,
   getParamParts,
   combineDestructuredArguments,
-  getTSPropertyDef
+  tabLines,
 } = require('../common/common');
 
 /* Definition */
@@ -132,13 +132,19 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   let value = '';
   let isPropertyType = false;
   const isDeprecated = /\* @deprecated/m.test(comment);
+  const [, propertyFunctionName] = /\s*(\w*):\s*function/
+    .exec(firstLine) || [];
 
   if (constructor === true) {
     name = 'constructor';
     value = definition.substring(definition.indexOf('=') + 1);
   } else
   // If in an object? Probably Object.defineProperty or object.definePropertie
-  if (firstLine.indexOf(':') > -1 && (firstLine.indexOf('{') === -1 || firstLine.indexOf('{') > firstLine.indexOf(':'))) {
+  if (
+    !propertyFunctionName && 
+    firstLine.indexOf(':') > -1 && 
+    (firstLine.indexOf('{') === -1 || firstLine.indexOf('{') > firstLine.indexOf(':'))
+  ) {
     if (expand) {
       isPropertyType = true;
       ({ name, value } = getTSPropertyDef(definition));
@@ -194,7 +200,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
       // Check the next index. If it is NOT optional, then this param cannot be optoinal.
       // Instead make it a union type with undefined
-      if (opt && typeArr[index+1] && !typeArr[index+1].opt) {
+      if (opt && typeArr[index+1] && !types[typeArr[index+1]].opt) {
         opt = false
         type = (type instanceof Object && !Array.isArray(type)) ? `${JSON.stringify(type)} | undefined` : `${type} | undefined`
       }
@@ -203,7 +209,9 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     }, {});
     const returns = getReturns(comment);
 
-    if(!name.length && !types.length) name = namedFunction.exec(firstLine)[0];
+    if(!name.length && !types.length) {
+      name = propertyFunctionName || namedFunction.exec(firstLine)[0];
+    }
 
     tail = `(${outputParams(params)})`;
 
@@ -226,7 +234,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
   function outputParams(params) {
     let paramStr = Object.keys(params).length ? JSON.stringify(params) : '';
-    if (paramStr.length > 80) {
+    if (paramStr.length > 70) {
       paramStr = JSON.stringify(params, null, 2);
     }
     else {
@@ -274,7 +282,7 @@ function getParams(comment) {
   let pos = -1
   while ((pos = comment.indexOf('@param', pos + 1)) > -1) {
     const paramStr = comment.substring(pos, comment.indexOf('\n', pos));
-    const { type, isOptional, name, defaultValue } = getParamParts(paramStr);
+    const { type, isOptional, name, defaultValue } = getParamParts(paramStr) || {};
 
     if (type) {
       const el = { 
@@ -349,7 +357,7 @@ function getReturns(comment) {
       if (type.includes('#')) {
         type = type.substring(0, type.indexOf('#'))
       }
-      return type;
+      return type.replace(/Object\./g, 'Record');
     }
   }
 
@@ -372,4 +380,90 @@ function getFieldType(comment) {
     }
   }
   return '';
+}
+
+const { getCommentAreas } = require('../code-analysis/comment-collector');
+const { getObjectDef } = require('../common/common');
+
+/**
+ * Get Typescript property definition defined as
+ * propertyName: 'Foo'
+ * or
+ * propertName: {
+ *  foo: 'one',
+ *  bar: true
+ * }
+ * @param {string} str
+ * @return {string}
+ * @example
+ * propertName: {
+ *  foo: 'one',
+ *  bar: 'two',
+ *  fn() {}
+ * }
+ * converts to 
+ * propertyName: {
+ *  foo: string,
+ *  bar: boolean,
+ *  fn: Function
+ * }
+ */
+function getTSPropertyDef(str) {
+  const [name, ...objStr] = str.split(/:\s*/);
+  const objDefStr = objStr.join(': ');
+  if (!objDefStr) return;
+
+  // Check if property object has properties identified with comments
+  const types = getCommentAreas(objDefStr, '* @memberof ');
+  const objectDefinitionContainsJSDocs = types.length > 0;
+  if (objectDefinitionContainsJSDocs) { 
+    const tsDefs = createMembersTSDefs(types);
+    let properties = tsDefs.map(({ TSDef, comment }) => {
+        return `${comment}\n${TSDef[0]}`;
+      }).join(",\n");
+    properties = tabLines(properties);
+    const value = `{\n${properties}\n}`;
+    return { name, value };
+  }
+
+  const def = getObjectDef(objDefStr);
+  const obj = toObject(def || objDefStr);
+  const value = toTSDeclaration(obj);
+  // console.log({ str, name, value })
+  return { name, value };
+}
+
+/**
+ * Converts object definition string to object
+ * Expect string like { foo: "one", bar: true }
+ * @param {string} str
+ * @return {object}
+ */
+function toObject(str) {
+  if (!str) return;
+  try {
+    eval('var o = ' + str);
+    return o; 
+  } catch(err) {}
+}
+
+/**
+ * Converts object to typescript declaration using typeof to detect property value
+ * @param {object} obj
+ * @return {string}
+ */
+function toTSDeclaration(obj) {
+  if (obj === undefined) return;
+  return JSON.stringify(getObj(obj), null, 2).replace(/\"/g, '');
+
+  function getObj(obj) {
+    if (obj === null) return 'any';
+    if (typeof obj !== 'object') return typeof obj;
+    return Object.entries(obj)
+      .reduce((acc, [key, value]) => {
+        let type = (typeof value).replace('function', 'Function');
+        if (type === 'object') type = getObj(value);
+        return { ...acc, [key]: type };
+      }, {});
+  }
 }
