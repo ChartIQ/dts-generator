@@ -94,7 +94,7 @@ function cleanCommentData(comment, skipAdditional = []) {
  * @returns {string}
  */
 function fixType(type) {
-  return type.replace(/\s*((external:)?(\w|\.|~|#|\*)+)\s*/g, coerce);
+  return type.replace(/\s*((external:)?(\w|\.|~|#|\*|<|>)+)\s*/g, coerce);
 
   function coerce(type) {
     if (/\.prototype\.|\w#/.test(type)) {
@@ -198,21 +198,23 @@ function getDefinition(content) {
 function getParamParts(content) {
   if (!g_re['getParamParts']) {
     g_re['getParamParts'] = new RegExp(''
-      + '(' // Get type
-      +   /\{(Object\.<\w*,\s*[^>]*>)\}/.source // Hashmap type {Object.<string, { name: string}>}
+      + '\\{\\(?((' // Get type as combination of
+      +   /Object\.<\w*,\s*[^>]*>/.source // Hashmap type {Object.<string, { name: string}>}
       +   '|'
-      +   /\{([\w\s:|.#~]*?)\}/.source // Simple or union type, match word space or | lazy
-      + ')' // End get type
+      +   /[\w\s:.#~]/.source // Simple type, Class member reference, external: reference
+      +   '|'
+      +   '\\|' // | in union type
+      + ')*)\\)?\\}' //End get type
       + /\s*(\[?)\s*/.source // Optional start bracket if exists
       + /([\w\.]*)/.source // Parametr name
       + /\s*(\=?)\s*([^\]]*)/.source // Default value if exists
     );
   }
 
-  const [isMatch, , objectType, type, optional, name, , value ] = g_re['getParamParts'].exec(content) || [];
+  const [isMatch, type, , optional, name, , value ] = g_re['getParamParts'].exec(content) || [];
   if (!isMatch) return;
   return { 
-    type: type || objectType.replace(/Object./, 'Record'),
+    type: type.replace(/Object./g, 'Record'),
     isOptional: !!optional,
     name,
     defaultValue: optional ? value : '' 
