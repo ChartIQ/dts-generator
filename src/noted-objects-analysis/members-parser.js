@@ -200,7 +200,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
       // Check the next index. If it is NOT optional, then this param cannot be optoinal.
       // Instead make it a union type with undefined
-      if (opt && typeArr[index+1] && !typeArr[index+1].opt) {
+      if (opt && typeArr[index+1] && !types[typeArr[index+1]].opt) {
         opt = false
         type = (type instanceof Object && !Array.isArray(type)) ? `${JSON.stringify(type)} | undefined` : `${type} | undefined`
       }
