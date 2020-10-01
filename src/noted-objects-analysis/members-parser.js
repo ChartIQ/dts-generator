@@ -369,17 +369,17 @@ function getReturns(comment) {
  * @returns {string}
  */
 function getFieldType(comment) {
-  let pos = -1;
-  if ((pos = comment.indexOf('@type')) > -1) {
-    const typeStr = comment.substring(pos, comment.indexOf('\n', pos)).trim();
-    const deconstruction = /\s\{?([^}]+)\}?.*/.exec(typeStr);
+  const pos = comment.indexOf('@type');
+  if (pos === -1) return '';
 
-    if (deconstruction && deconstruction.length === 2) {
-      let type = fixType(deconstruction[1].trim());
-      return type;
-    }
-  }
-  return '';
+  const typeStr = comment.substring(pos, comment.indexOf('\n', pos)).trim();
+  const type = fixType(
+      typeStr
+        .replace(/@type\s*\{?|\}?\s*$/g, '')
+        .replace(/Object\./g, 'Record')
+    );
+
+  return type;
 }
 
 const { getCommentAreas } = require('../code-analysis/comment-collector');
