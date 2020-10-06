@@ -52,6 +52,10 @@ function cleanCommentData(comment, skipAdditional = []) {
   ];
   const toSkip = [...skipDefaults, ...skipAdditional];
 
+  comment = comment.replace(/<span[^>]*>(.*?)<\/span>/, "$1")
+    .replace(/\{\@link ([^}]*)\}/g, "$1")
+    .replace(/<br>|&bull;/g, "");
+
   for (const str of comment.split('\n')) {
     switch (true) {
     case str.trim().substring(0, 3) === '/**':
