@@ -56,7 +56,11 @@ function intoClasses(classes, members) {
         path: interfacePath,
         name: interfaceName,
         TSDef: [`interface ${interfaceName}`],
+        isInterface: true,
       }
+
+      // remove public keyword from interface member definition
+      member.TSDef[0] = member.TSDef[0].replace(/^public /, '');
 
       pairs[path] = { path, class: interfaceObj, members: [member] };
 
@@ -68,6 +72,9 @@ function intoClasses(classes, members) {
         info(member, 'class member', `name ${member.name} @memberof parameter has not defined object path of "${path}"`);
       }
       continue;
+    }
+    if (pairs[path].class.isInterface) {
+      member.TSDef[0] = member.TSDef[0].replace(/^public /, '');
     }
     membersLookup[member.path.concat(member.name).join('.')] = member; 
 
