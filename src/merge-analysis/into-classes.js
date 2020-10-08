@@ -43,7 +43,25 @@ function intoClasses(classes, members) {
   // Fill class members fill in aligned pairs
   for (const member of members) {
     const path = member.path.join('.');
+
+    // do not add static members, add them to namespace
+    if (/^public static \w*?\s*\(|^\s*function/.test(member.TSDef[0])) continue;
+
     if (pairs[path] === undefined) {
+
+      const interfaceName = member.path.pop()
+      const interfacePath = member.path;
+      const interfaceObj = {
+        comment: '',
+        path: interfacePath,
+        name: interfaceName,
+        TSDef: [`interface ${interfaceName}`],
+      }
+
+      pairs[path] = { path, class: interfaceObj, members: [member] };
+
+      continue;
+
       if (!membersLookup[path]) { 
         // Inform only if there is no member either with this path
         // Object properties containing JSDocs are processed separately
@@ -52,8 +70,6 @@ function intoClasses(classes, members) {
       continue;
     }
     membersLookup[member.path.concat(member.name).join('.')] = member; 
-    // do not add static members, add them to namespace
-    if (/^public static \w*?\s*\(|^\s*function/.test(member.TSDef[0])) continue;
 
     pairs[path].members.push(member);
   }
