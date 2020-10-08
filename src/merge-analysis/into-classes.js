@@ -64,7 +64,7 @@ function intoClasses(classes, members) {
         }
   
         // remove public keyword from interface member definition
-        member.TSDef[0] = member.TSDef[0].replace(/^public /, '');
+        member.TSDef[0] = member.TSDef[0].replace(/^public static |^public /, '');
   
         pairs[path] = { path, class: interfaceObj, members: [member] };
   
@@ -78,9 +78,9 @@ function intoClasses(classes, members) {
       }
       continue;
     }
-    
+
     if (pairs[path].class.isInterface) {
-      member.TSDef[0] = member.TSDef[0].replace(/^public /, '');
+      member.TSDef[0] = member.TSDef[0].replace(/^public static |^public /, '');
     }
     membersLookup[member.path.concat(member.name).join('.')] = member; 
 
