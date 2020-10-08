@@ -49,22 +49,27 @@ function intoClasses(classes, members) {
 
     if (pairs[path] === undefined) {
 
+      
       const interfaceName = member.path.pop()
       const interfacePath = member.path;
-      const interfaceObj = {
-        comment: '',
-        path: interfacePath,
-        name: interfaceName,
-        TSDef: [`interface ${interfaceName}`],
-        isInterface: true,
+
+      const isClassLike = interfaceName[0] === interfaceName[0].toLocaleUpperCase();
+      if (isClassLike) {
+        const interfaceObj = {
+          comment: '',
+          path: interfacePath,
+          name: interfaceName,
+          TSDef: [`interface ${interfaceName}`],
+          isInterface: true,
+        }
+  
+        // remove public keyword from interface member definition
+        member.TSDef[0] = member.TSDef[0].replace(/^public /, '');
+  
+        pairs[path] = { path, class: interfaceObj, members: [member] };
+  
+        continue;
       }
-
-      // remove public keyword from interface member definition
-      member.TSDef[0] = member.TSDef[0].replace(/^public /, '');
-
-      pairs[path] = { path, class: interfaceObj, members: [member] };
-
-      continue;
 
       if (!membersLookup[path]) { 
         // Inform only if there is no member either with this path
@@ -73,6 +78,7 @@ function intoClasses(classes, members) {
       }
       continue;
     }
+    
     if (pairs[path].class.isInterface) {
       member.TSDef[0] = member.TSDef[0].replace(/^public /, '');
     }
