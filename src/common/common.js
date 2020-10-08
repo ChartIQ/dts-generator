@@ -181,7 +181,7 @@ function getDefinition(content) {
   if (def) {
     def = def
     .trim()
-    .replace(/\n|\n\r/g, '')
+    .replace(/[\r\n]/g, '')
     .replace(/\s{2,}/g, ' ')
     .replace(/\( /g, '(')
     .replace(/ \)/g, ')')
@@ -240,7 +240,7 @@ function getParamParts(content) {
  * function overloaded(arg: number): string
  */
 function getTSDeclaration(comment) {
-  const re = /(?<=@tsdeclaration\n)( |\t)*\* ([^@]*)/;
+  const re = /(?<=@tsdeclaration[\r\n]+)( |\t)*\* ([^@]*)/;
   const [, , declaration = ''] = re.exec(comment) || [];
   
   return declaration
@@ -255,7 +255,7 @@ function getTSDeclaration(comment) {
  * @returns {string} returns comment content without tsdeclaration part
  */
 function clearTSDeclaration(comment) {
-  re = / \* @tsdeclaration\n( |\t)*\* ([\s\S]*?)(?= \*\/| \* @)/m;
+  re = / \* @tsdeclaration[\r\n]+( |\t)*\* ([\s\S]*?)(?= \*\/| \* @)/m;
 
   return comment.replace(re, '');
 }
