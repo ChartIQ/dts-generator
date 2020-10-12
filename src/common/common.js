@@ -187,7 +187,7 @@ function getPropertyParts(content) {
  * - any otherwise
  *
  * @param {string} content 
- * @return {'object' | 'number' | 'string' | 'function', 'any' }
+ * @return {'object' | 'number' | 'string' | 'function' | 'any' }
  */;
 function getValueType(content) {
   const startsWith = content[0];
