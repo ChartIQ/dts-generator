@@ -170,7 +170,7 @@ function fixType(type) {
  */
 function getPropertyParts(content) {
   let [, name = "", assignmentType, value = ""] = 
-    /^\s*([\w\d.]+)\s*([=:])\s*([\s\S]*)/.exec(content) || [];
+    /^\s*([\w\d.$]+)\s*([=:])\s*([\s\S]*)/.exec(content) || [];
 
   if (assignmentType === "=" && !/\./.test(name)) name = '';
   name = name.replace(/.*\./, "");
