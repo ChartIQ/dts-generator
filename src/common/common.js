@@ -8,7 +8,9 @@ module.exports = {
   getTSDeclaration,
   clearTSDeclaration,
   combineDestructuredArguments,
-  getObjectDef
+  getObjectDef,
+  getPropertyParts,
+  getValueType
 };
 
 const { values } = require('lodash');
@@ -153,14 +155,56 @@ function fixType(type) {
 }
 
 /**
+ * If content is first line of property pattern return name of property 
+ * Following is considered valid patterns
+ * 
+ * foo: {         // object
+ * foo: 125       // number
+ * foo: '...      // string, can start with " or `
+ * Foo.bar = {    // object
+ * Foo.bar = 125  // number
+ * Foo.bar = '... // string, can start with " or `
+ * 
+ * @param {string} content
+ * @return { name: string, assignmentType: string, valueType: string };
+ */
+function getPropertyParts(content) {
+  let [, name = "", assignmentType, value = ""] = 
+    /^\s*([\w\d.]+)\s*([=:])\s*([\s\S]*)/.exec(content) || [];
+
+  if (assignmentType === "=" && !/\./.test(name)) name = '';
+  name = name.replace(/.*\./, "");
+  valueType = getValueType(value);
+
+  return { name, assignmentType, valueType, value };
+}
+
+/**
+ * Return value type:
+ * - object if content starts with {
+ * - number if content starts with digit
+ * - string if content starts with ', " or `
+ * - any otherwise
+ *
+ * @param {string} content 
+ * @return {'object' | 'number' | 'string' | 'function', 'any' }
+ */;
+function getValueType(content) {
+  const startsWith = content[0];
+  if (startsWith === "{") return "object";
+  if (!isNaN(startsWith)) return "number";
+  if (/["'`]/.test(startsWith)) return "string";
+  if (/^function/.test(content)) return "function";
+  return "any";
+}
+
+/**
  * Gets definition part either variable assignment or method
  * @param {string} content
  * @returns {string}
  */
 function getDefinition(content) {
-  const [_, isObj] = /^\s*\w*\s*\:\s*({){0,1}/.exec(content) || [];
-  
-  if (isObj) {
+  if (getPropertyParts(content).valueType === 'object') {
     const objStart = content.indexOf('{');
     const preObj = content.substr(0, objStart).trimLeft();
     const objDef = getObjectDef(content);
