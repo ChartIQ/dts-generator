@@ -67,6 +67,8 @@ function intoClasses(classes, members) {
         member.TSDef[0] = member.TSDef[0].replace(/^public static |^public /, '');
   
         pairs[path] = { path, class: interfaceObj, members: [member] };
+
+        membersLookup[member.path.concat(interfaceName, member.name).join('.')] = member;
   
         continue;
       }
