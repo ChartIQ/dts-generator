@@ -144,7 +144,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     if (expand) {
       ({ name, value } = getTSPropertyDef(definition));
     }
-  } 
+  }
 
   let tail = ''
   if(constructor || valueType === "function" || isFunction.test(firstLine)) {
@@ -427,7 +427,10 @@ function toObject(str) {
  */
 function toTSDeclaration(obj) {
   if (obj === undefined) return;
-  return JSON.stringify(getObj(obj), null, 2).replace(/\"/g, '');
+  return JSON
+    .stringify(getObj(obj), null, 2)
+    .replace(/\"/g, '')
+    .replace(/~~~/g, '"');
 
   function getObj(obj) {
     if (obj === null) return 'any';
@@ -436,6 +439,9 @@ function toTSDeclaration(obj) {
       .reduce((acc, [key, value]) => {
         let type = (typeof value).replace('function', 'Function');
         if (type === 'object') type = getObj(value);
+        if (/ /.test(key)) {
+          key = "~~~" + key + "~~~";
+        }
         return { ...acc, [key]: type };
       }, {});
   }
