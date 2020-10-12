@@ -430,7 +430,7 @@ function toTSDeclaration(obj) {
   return JSON
     .stringify(getObj(obj), null, 2)
     .replace(/\"/g, '')
-    .replace(/~~~/g, '"');
+    .replace(/~~~/g, '"'); // replace placeholders
 
   function getObj(obj) {
     if (obj === null) return 'any';
@@ -439,8 +439,8 @@ function toTSDeclaration(obj) {
       .reduce((acc, [key, value]) => {
         let type = (typeof value).replace('function', 'Function');
         if (type === 'object') type = getObj(value);
-        if (/ /.test(key)) {
-          key = "~~~" + key + "~~~";
+        if (/ |\//.test(key)) {
+          key = "~~~" + key + "~~~"; // placeholder for the "
         }
         return { ...acc, [key]: type };
       }, {});
