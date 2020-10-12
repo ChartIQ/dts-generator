@@ -194,7 +194,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     const returns = getReturns(comment);
 
     if(!name.length && !types.length) {
-      name = propertyFunctionName || namedFunction.exec(firstLine)[0];
+      name = namedFunction.exec(firstLine)[0];
     }
 
     tail = `(${outputParams(params)})`;
