@@ -3,3 +3,6 @@ node_modules
 
 # Ignore compiled example files
 examples/*.d.ts
+
+# Ignore IDE config
+.project
