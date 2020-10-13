@@ -5,6 +5,7 @@ const {
   getParamParts,
   combineDestructuredArguments,
   tabLines,
+  getPropertyParts,
 } = require('../common/common');
 
 /* Definition */
@@ -128,42 +129,25 @@ function createConstructorsTSDefs(classes, { expandPropertyDeclarationBasedOnDef
  */
 function setMemberDefinitions(definition, comment, modifiers, constructor = false, expand) {
   const firstLine = definition.substring(0, definition.indexOf('\n')) || definition;
-  let name = '';
-  let value = '';
   let isPropertyType = false;
   const isDeprecated = /\* @deprecated/m.test(comment);
-  const [, propertyFunctionName] = /\s*(\w*):\s*function/
-    .exec(firstLine) || [];
+
+  let { name, valueType, value } = getPropertyParts(definition);
 
   if (constructor === true) {
     name = 'constructor';
     value = definition.substring(definition.indexOf('=') + 1);
-  } else
+  }
   // If in an object? Probably Object.defineProperty or object.definePropertie
-  if (
-    !propertyFunctionName && 
-    firstLine.indexOf(':') > -1 && 
-    (firstLine.indexOf('{') === -1 || firstLine.indexOf('{') > firstLine.indexOf(':'))
-  ) {
+  if ( valueType === "object" && expand) {
+    isPropertyType = true;
     if (expand) {
-      isPropertyType = true;
       ({ name, value } = getTSPropertyDef(definition));
-    } else {
-      name = firstLine.substring(0, firstLine.indexOf(':')).trim();
-      value = definition.substring(definition.indexOf(':') + 1);
     }
-  } else
-  // If setting value equal to function
-  if (firstLine.indexOf('=') > -1) {
-    name = firstLine.substring(
-      firstLine.lastIndexOf('.', firstLine.indexOf('=')) + 1,
-      firstLine.indexOf('='),
-    ).trim();
-    value = definition.substring(definition.indexOf('=') + 1);
   }
 
   let tail = ''
-  if(constructor || (!isPropertyType && isFunction.test(firstLine))) {
+  if(constructor || valueType === "function" || isFunction.test(firstLine)) {
     let all = getArguments(firstLine);
     all = combineDestructuredArguments(all);
     const args = all.split(',')
@@ -210,7 +194,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     const returns = getReturns(comment);
 
     if(!name.length && !types.length) {
-      name = propertyFunctionName || namedFunction.exec(firstLine)[0];
+      name = namedFunction.exec(firstLine)[0];
     }
 
     tail = `(${outputParams(params)})`;
@@ -223,7 +207,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     const type = getFieldType(comment);
     if (type !== '') {
       tail = `: ${
-        isPropertyType && value && value !== '{}'
+        valueType === 'object' && value && value !== '{}'
           ? type.replace(/object/, value)
           : type
       }`;
@@ -247,19 +231,6 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   }
 }
 
-/**
- * @param {string} firstLine
- */
-function getFunc(firstLine) {
-  if (firstLine.includes('function(')) {
-    return firstLine.substring(firstLine.indexOf('function(') + 9, firstLine.indexOf(')'));
-  }
-  if (firstLine.includes('function (')) {
-    return firstLine.substring(firstLine.indexOf('function (') + 10, firstLine.indexOf(')'))
-  }
-
-  return false
-}
 
 function getArguments(expression) {
   return expression.substring(expression.indexOf('(')+1, expression.indexOf(')'));
@@ -409,9 +380,11 @@ const { getObjectDef } = require('../common/common');
  * }
  */
 function getTSPropertyDef(str) {
-  const [name, ...objStr] = str.split(/:\s*/);
-  const objDefStr = objStr.join(': ');
-  if (!objDefStr) return;
+  let { name, valueType, value: objDefStr } = getPropertyParts(str);
+
+  if (valueType !== "object") {
+    return { name, value: valueType }
+  }
 
   // Check if property object has properties identified with comments
   const types = getCommentAreas(objDefStr, '* @memberof ');
@@ -454,7 +427,10 @@ function toObject(str) {
  */
 function toTSDeclaration(obj) {
   if (obj === undefined) return;
-  return JSON.stringify(getObj(obj), null, 2).replace(/\"/g, '');
+  return JSON
+    .stringify(getObj(obj), null, 2)
+    .replace(/\"/g, '')
+    .replace(/~~~/g, '"'); // replace placeholders
 
   function getObj(obj) {
     if (obj === null) return 'any';
@@ -463,6 +439,9 @@ function toTSDeclaration(obj) {
       .reduce((acc, [key, value]) => {
         let type = (typeof value).replace('function', 'Function');
         if (type === 'object') type = getObj(value);
+        if (/ |\//.test(key)) {
+          key = "~~~" + key + "~~~"; // placeholder for the "
+        }
         return { ...acc, [key]: type };
       }, {});
   }

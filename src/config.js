@@ -6,6 +6,7 @@ module.exports = {
       data
         .replace(/CIQ\.ChartEngine\.AdvancedInjectable/gm, 'CIQ.ChartEngine')
         .replace(/@memberof!/gim, '@memberof')
+        .replace(/@tsinterface/g, '@typedef') // Process @tsinterface the same as @typedef but avoids inclusion in generated JS documentation
       );
   },
   postprocessing: function(data, source) {

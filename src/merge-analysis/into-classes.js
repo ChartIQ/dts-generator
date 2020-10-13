@@ -49,18 +49,29 @@ function intoClasses(classes, members) {
 
     if (pairs[path] === undefined) {
 
+      
       const interfaceName = member.path.pop()
       const interfacePath = member.path;
-      const interfaceObj = {
-        comment: '',
-        path: interfacePath,
-        name: interfaceName,
-        TSDef: [`interface ${interfaceName}`],
+
+      const isClassLike = interfaceName[0] === interfaceName[0].toLocaleUpperCase();
+      if (isClassLike) {
+        const interfaceObj = {
+          comment: '',
+          path: interfacePath,
+          name: interfaceName,
+          TSDef: [`interface ${interfaceName}`],
+          isInterface: true,
+        }
+  
+        // remove public keyword from interface member definition
+        member.TSDef[0] = member.TSDef[0].replace(/^public static |^public /, '');
+  
+        pairs[path] = { path, class: interfaceObj, members: [member] };
+
+        membersLookup[member.path.concat(interfaceName, member.name).join('.')] = member;
+  
+        continue;
       }
-
-      pairs[path] = { path, class: interfaceObj, members: [member] };
-
-      continue;
 
       if (!membersLookup[path]) { 
         // Inform only if there is no member either with this path
@@ -68,6 +79,10 @@ function intoClasses(classes, members) {
         info(member, 'class member', `name ${member.name} @memberof parameter has not defined object path of "${path}"`);
       }
       continue;
+    }
+
+    if (pairs[path].class.isInterface) {
+      member.TSDef[0] = member.TSDef[0].replace(/^public static |^public /, '');
     }
     membersLookup[member.path.concat(member.name).join('.')] = member; 
 
