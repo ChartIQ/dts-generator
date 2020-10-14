@@ -51,11 +51,11 @@ function collectAllNotedObjects(data) {
  * Returns comment areas as collection
  * @param {string} data
  * @param {string} tag
- * @param {any} [extention = {}]
+ * @param {any} [extension = {}]
  * @param {boolean} [isDefinitionRequired = true]
  * @returns {Area[]}
  */
-function getCommentAreas(data, tag, extention = {}, isDefinitionRequired = true) {
+function getCommentAreas(data, tag, extension = {}, isDefinitionRequired = true) {
   /**
    * @type {Area[]}
    */
@@ -78,7 +78,7 @@ function getCommentAreas(data, tag, extention = {}, isDefinitionRequired = true)
       definition: isDefinitionRequired ? definition : '',
       modifiers: [],
       tsdeclarationOverwrite,
-      ...extention,
+      ...extension,
     }
     result.push(area);
   };
