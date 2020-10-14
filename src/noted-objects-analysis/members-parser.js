@@ -55,7 +55,7 @@ function createMembersTSDefs(
   for (const member of members) {
     const comment = member.comment;
     if (/\* @private/.test(comment) && !includePrivate) continue;
-    const { TSDef, name } = setMemberDefinitions(
+    const { TSDef, name, valueType } = setMemberDefinitions(
       member.definition,
       comment,
       member.modifiers,
@@ -74,6 +74,7 @@ function createMembersTSDefs(
       comment: cleanCommentData(comment),
       path,
       name,
+      valueType
     };
     result.push(definition);
   }
@@ -98,7 +99,7 @@ function createConstructorsTSDefs(classes, { expandPropertyDeclarationBasedOnDef
       continue;
     }
 
-    const { TSDef, name } = setMemberDefinitions(
+    const { TSDef, name, valueType } = setMemberDefinitions(
       constructor.definition,
       comment,
       modifiers,
@@ -113,6 +114,7 @@ function createConstructorsTSDefs(classes, { expandPropertyDeclarationBasedOnDef
       comment: cleanCommentData(comment),
       path,
       name,
+      valueType
     };
     result.push(definition);
   }
@@ -214,7 +216,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     }
   }
 
-  return { TSDef: [`${modifiers.join(' ')} ${name}${tail}`.trim()], name };
+  return { TSDef: [`${modifiers.join(' ')} ${name}${tail}`.trim()], name, valueType };
 
   function outputParams(params) {
     let paramStr = Object.keys(params).length ? JSON.stringify(params) : '';

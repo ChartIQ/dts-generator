@@ -179,18 +179,32 @@ function generate(dataFrom, config = defaultConfig) {
  */
 function classStaticMembersToNamespaceFunctions(members) {
   return members
-    .filter(member => /^public static \w*?\s*\(|^function\s*/.test(member.TSDef[0]))
+    .filter(member => /^public static \w*?\s*[(:]|^function\s*/.test(member.TSDef[0]))
     .map((member) => {
-      const { area, area: { tsdeclarationOverwrite }, comment, name, path, TSDef: [definition]} = member;
-      // member.TSDef[0] = member.TSDef[0].replace(/^public static /, 'function ');
+      const { 
+        area,
+        area: { tsdeclarationOverwrite },
+        comment,
+        valueType,
+        path,
+        TSDef: [definition]
+      } = member;
+
+      const isReadOnly = /READ ONLY/.test(comment);
+      
+      const declaration = tsdeclarationOverwrite ||
+        definition.replace(
+          /^public static /,
+          valueType === 'function' 
+            ? 'function ' 
+            : isReadOnly ? 'const ' : 'let '
+        );
+
       return {
         area,
         path,
         comment,
-        code: `${comment}\n${
-          tsdeclarationOverwrite ||
-          definition.replace(/^public static /, 'function ')
-        }`
+        code: `${comment}\n${declaration}`
       };
     });
 }
