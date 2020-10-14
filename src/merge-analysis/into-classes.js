@@ -100,7 +100,7 @@ function intoClasses(classes, members) {
 ${pair.class.TSDef.join('')} {
 ${pair.members.map(v =>
 `${tabLines(v.comment, '  ')}
-${v.TSDef.map(d => tabLines(d, '  ')).join('\n')}
+${(v.area.tsdeclarationOverwrite ? [v.area.tsdeclarationOverwrite] : v.TSDef).map(d => tabLines(d, '  ')).join('\n')}
 `).join('')}
 }
 `;
