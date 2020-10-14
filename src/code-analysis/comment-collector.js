@@ -134,7 +134,7 @@ function applyMemberRoles(members, data) {
       (
         member.definition.includes('.prototype.') === false &&
         member.value.includes('.prototype') === false &&
-        member.value[member.value.length - 1] !== '#' &&
+        !/#/.test(member.value) &&
         !member.comment.includes(' @instance') &&
         !isClassMethod(member.definition)
       )
