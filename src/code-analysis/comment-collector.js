@@ -134,7 +134,7 @@ function applyMemberRoles(members, data) {
       (
         member.definition.includes('.prototype.') === false &&
         member.value.includes('.prototype') === false &&
-        member.value[member.value.length - 1] !== '#' &&
+        !/#/.test(member.value) &&
         !member.comment.includes(' @instance') &&
         !isClassMethod(member.definition)
       )
@@ -142,15 +142,10 @@ function applyMemberRoles(members, data) {
       _member.modifiers.push('static');
     }
 
-    // (\(.*\)\s*=>)|\b\s*\(\s*\)|(function)
-    if (/(\(.*\))|(\(.*\)\s*\s*=>)/.test(member.definition)) {
+    if (!member.comment.includes(' @type ') && /\(.*\)/.test(member.definition)) {
       _member.type = 'method';
     } else {
       _member.type = 'field';
-    }
-
-    if (_member.type === 'field') {
-      _member.definition = _member.definition;
     }
 
     result.push(_member);

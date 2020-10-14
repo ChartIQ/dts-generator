@@ -45,7 +45,7 @@ function intoClasses(classes, members) {
     const path = member.path.join('.');
 
     // do not add static members, add them to namespace
-    if (/^public static \w*?\s*\(|^\s*function/.test(member.TSDef[0])) continue;
+    if (/^public static \w*?\s*(:|\(|^\s*function)/.test(member.TSDef[0])) continue;
 
     if (pairs[path] === undefined) {
 

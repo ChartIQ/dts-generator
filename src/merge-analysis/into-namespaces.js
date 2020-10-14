@@ -90,9 +90,17 @@ ${members.map(c => tabLines(c.code)).join('\n\n')}
     }
 
     // If there is a definition of namespace without members it will be ignored
-    // Classes has same definition so that midght be confusing
+    // Classes has same definition so that might be confusing
     if (namespace !== null && members.length === 0) {
       continue;
+    }
+    
+    // remove statics
+    if(
+    	namespace === null &&
+    	members.filter(m => !m.area || m.area.modifiers.indexOf('static') === -1).length === 0
+    ){
+    	continue;
     }
 
     result.push({

@@ -136,7 +136,7 @@ function generate(dataFrom, config = defaultConfig) {
   // Grab all required comments into grouped objects
   const notedObjects = collectAllNotedObjects(dataFrom);
 
-  // Convert the data into something that could be used as a defenition
+  // Convert the data into something that could be used as a definition
   const members = createMembersTSDefs(notedObjects.members, {
     includePrivate, expandPropertyDeclarationBasedOnDefault
   });
@@ -179,18 +179,25 @@ function generate(dataFrom, config = defaultConfig) {
  */
 function classStaticMembersToNamespaceFunctions(members) {
   return members
-    .filter(member => /^public static \w*?\s*\(|^function\s*/.test(member.TSDef[0]))
+    .filter(member => /^public static \w*?\s*(:|\(|^\s*function)/.test(member.TSDef[0]))
     .map((member) => {
-      const { area, area: { tsdeclarationOverwrite }, comment, name, path, TSDef: [definition]} = member;
-      // member.TSDef[0] = member.TSDef[0].replace(/^public static /, 'function ');
+      const { area, area: { tsdeclarationOverwrite, type }, comment, name, path, TSDef: [definition]} = member;
+
+      const isReadOnly = /READ ONLY/.test(comment);
+
+      const declaration = tsdeclarationOverwrite ||
+        definition.replace(
+          /^public static /,
+          type === 'field'
+            ? isReadOnly ? 'const ' : 'let '
+            : 'function ' 
+        );
+      
       return {
         area,
         path,
         comment,
-        code: `${comment}\n${
-          tsdeclarationOverwrite ||
-          definition.replace(/^public static /, 'function ')
-        }`
+        code: `${comment}\n${declaration}`
       };
     });
 }
