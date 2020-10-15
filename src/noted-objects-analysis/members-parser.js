@@ -70,7 +70,7 @@ function createMembersTSDefs(
 
     const definition = {
       area: member,
-      TSDef: member.tsdeclarationOverwrite ? [member.tsdeclarationOverwrite] : TSDef,
+      TSDef,
       comment: cleanCommentData(comment),
       path,
       name,
@@ -203,7 +203,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
       tail += `: ${returns}`;
     }
   } else
-  if (comment.includes('* @type')) {
+  if (comment.includes('* @type ')) {
     const type = getFieldType(comment);
     if (type !== '') {
       tail = `: ${
@@ -340,7 +340,7 @@ function getReturns(comment) {
  * @returns {string}
  */
 function getFieldType(comment) {
-  const pos = comment.indexOf('@type');
+  const pos = comment.indexOf('@type ');
   if (pos === -1) return '';
 
   const typeStr = comment.substring(pos, comment.indexOf('\n', pos)).trim();

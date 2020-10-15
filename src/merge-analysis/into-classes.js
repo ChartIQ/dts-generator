@@ -45,7 +45,7 @@ function intoClasses(classes, members) {
     const path = member.path.join('.');
 
     // do not add static members, add them to namespace
-    if (/^public static \w*?\s*\(|^\s*function/.test(member.TSDef[0])) continue;
+    if (/^public static \w*?\s*(:|\(|^\s*function)/.test(member.TSDef[0])) continue;
 
     if (pairs[path] === undefined) {
 
@@ -100,7 +100,7 @@ function intoClasses(classes, members) {
 ${pair.class.TSDef.join('')} {
 ${pair.members.map(v =>
 `${tabLines(v.comment, '  ')}
-${v.TSDef.map(d => tabLines(d, '  ')).join('\n')}
+${(v.area.tsdeclarationOverwrite ? [v.area.tsdeclarationOverwrite] : v.TSDef).map(d => tabLines(d, '  ')).join('\n')}
 `).join('')}
 }
 `;
