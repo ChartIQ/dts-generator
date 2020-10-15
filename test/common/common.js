@@ -342,6 +342,7 @@ describe('common.js', () => {
     testCases.forEach(({ name, input, expected }) => {
       it(name, () => {
         const result = getParamParts(input);
+
         expect(result).eql(expected);
       });
     });

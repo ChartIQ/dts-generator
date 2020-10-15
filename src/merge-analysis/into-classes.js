@@ -86,9 +86,6 @@ function intoClasses(classes, members) {
     }
     membersLookup[member.path.concat(member.name).join('.')] = member; 
 
-    // do not add static members, add them to namespace
-    if (/^public static \w*?\s*\(|function/.test(member.TSDef[0])) continue;
-
     pairs[path].members.push(member);
   }
 
