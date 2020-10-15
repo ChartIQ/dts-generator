@@ -43,7 +43,36 @@ function intoClasses(classes, members) {
   // Fill class members fill in aligned pairs
   for (const member of members) {
     const path = member.path.join('.');
+
+    // do not add static members, add them to namespace
+    if (/^public static \w*?\s*(:|\(|^\s*function)/.test(member.TSDef[0])) continue;
+
     if (pairs[path] === undefined) {
+
+      
+      const interfaceName = member.path.pop()
+      const interfacePath = member.path;
+
+      const isClassLike = interfaceName[0] === interfaceName[0].toLocaleUpperCase();
+      if (isClassLike) {
+        const interfaceObj = {
+          comment: '',
+          path: interfacePath,
+          name: interfaceName,
+          TSDef: [`interface ${interfaceName}`],
+          isInterface: true,
+        }
+  
+        // remove public keyword from interface member definition
+        member.TSDef[0] = member.TSDef[0].replace(/^public static |^public /, '');
+  
+        pairs[path] = { path, class: interfaceObj, members: [member] };
+
+        membersLookup[member.path.concat(interfaceName, member.name).join('.')] = member;
+  
+        continue;
+      }
+
       if (!membersLookup[path]) { 
         // Inform only if there is no member either with this path
         // Object properties containing JSDocs are processed separately
@@ -51,9 +80,11 @@ function intoClasses(classes, members) {
       }
       continue;
     }
+
+    if (pairs[path].class.isInterface) {
+      member.TSDef[0] = member.TSDef[0].replace(/^public static |^public /, '');
+    }
     membersLookup[member.path.concat(member.name).join('.')] = member; 
-    // do not add static members, add them to namespace
-    if (/^public static \w*?\s*\(|^\s*function/.test(member.TSDef[0])) continue;
 
     // do not add static members, add them to namespace
     if (/^public static \w*?\s*\(|function/.test(member.TSDef[0])) continue;
@@ -72,7 +103,7 @@ function intoClasses(classes, members) {
 ${pair.class.TSDef.join('')} {
 ${pair.members.map(v =>
 `${tabLines(v.comment, '  ')}
-${v.TSDef.map(d => tabLines(d, '  ')).join('\n')}
+${(v.area.tsdeclarationOverwrite ? [v.area.tsdeclarationOverwrite] : v.TSDef).map(d => tabLines(d, '  ')).join('\n')}
 `).join('')}
 }
 `;

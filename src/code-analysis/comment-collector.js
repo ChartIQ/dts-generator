@@ -51,11 +51,11 @@ function collectAllNotedObjects(data) {
  * Returns comment areas as collection
  * @param {string} data
  * @param {string} tag
- * @param {any} [extention = {}]
+ * @param {any} [extension = {}]
  * @param {boolean} [isDefinitionRequired = true]
  * @returns {Area[]}
  */
-function getCommentAreas(data, tag, extention = {}, isDefinitionRequired = true) {
+function getCommentAreas(data, tag, extension = {}, isDefinitionRequired = true) {
   /**
    * @type {Area[]}
    */
@@ -78,7 +78,7 @@ function getCommentAreas(data, tag, extention = {}, isDefinitionRequired = true)
       definition: isDefinitionRequired ? definition : '',
       modifiers: [],
       tsdeclarationOverwrite,
-      ...extention,
+      ...extension,
     }
     result.push(area);
   };
@@ -134,7 +134,7 @@ function applyMemberRoles(members, data) {
       (
         member.definition.includes('.prototype.') === false &&
         member.value.includes('.prototype') === false &&
-        member.value[member.value.length - 1] !== '#' &&
+        !/#/.test(member.value) &&
         !member.comment.includes(' @instance') &&
         !isClassMethod(member.definition)
       )
@@ -142,15 +142,10 @@ function applyMemberRoles(members, data) {
       _member.modifiers.push('static');
     }
 
-    // (\(.*\)\s*=>)|\b\s*\(\s*\)|(function)
-    if (/(\(.*\))|(\(.*\)\s*\s*=>)/.test(member.definition)) {
+    if (!member.comment.includes(' @type ') && /\(.*\)/.test(member.definition)) {
       _member.type = 'method';
     } else {
       _member.type = 'field';
-    }
-
-    if (_member.type === 'field') {
-      _member.definition = _member.definition;
     }
 
     result.push(_member);
