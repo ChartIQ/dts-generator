@@ -150,7 +150,7 @@ function generate(dataFrom, config = defaultConfig) {
   const module = createModuleTSDefs(notedObjects.module, importTagName, exportTagName);
 
   // Include declarations into each other and get a strings
-  const classDefs = intoClasses(classes, [...constructors, ...members]);
+  const classDefs = intoClasses(classes, [...constructors, ...members], { includePrivate });
   const typeDefs = intoTypedefs(types);
   const callbacksDefs = intoCallbacks(callbacks);
   const namespaceDefs = intoNamespaces(namespaces, [

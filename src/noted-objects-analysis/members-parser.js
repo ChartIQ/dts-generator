@@ -44,8 +44,8 @@ const namedFunction = new RegExp(/\w*(?=\s*\()/);
  */
 function createMembersTSDefs(
   members, 
-  { 
-    includePrivate, 
+  {
+    includePrivate,
     expandPropertyDeclarationBasedOnDefault
   } = {}) {
   /**
