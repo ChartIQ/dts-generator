@@ -77,7 +77,7 @@ function intoClasses(classes, members, options = {}) {
       if (!membersLookup[path]) { 
         // Inform only if there is no member either with this path
         // Object properties containing JSDocs are processed separately
-        info(member, 'class member', `name ${member.name} @memberof parameter has not defined object path of "${path}"`);
+        error(member, 'class member', `name ${member.name} @memberof parameter has not defined object path of "${path}"`);
       }
       continue;
     }
