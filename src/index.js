@@ -5,7 +5,7 @@ const { exit } = require('process');
 const { basename } = require('path');
 const { existsSync, readFileSync, writeFileSync } = require('fs');
 
-const { conclusion } = require('./common/logger');
+const { conclusion, collection } = require('./common/logger');
 const { collectAllNotedObjects } = require('./code-analysis/comment-collector');
 const { createModuleTSDefs } = require('./noted-objects-analysis/module-parser');
 const { createMembersTSDefs, createConstructorsTSDefs } = require('./noted-objects-analysis/members-parser');
@@ -165,6 +165,9 @@ function generate(dataFrom, config = defaultConfig) {
   let definitions = moduleDefs.map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
 
   if(postprocessing) definitions = postprocessing(definitions, dataFrom);
+
+	if(collection.filter( issue => issue.type === 'error').length) throw new Error('YOU HAVE FAILED THIS CITY')
+
   return definitions
 }
 
@@ -173,8 +176,8 @@ function generate(dataFrom, config = defaultConfig) {
  */
 
 /**
- * 
- * @param {Definition[]} members 
+ *
+ * @param {Definition[]} members
  * @return {Definition[]}
  */
 function classStaticMembersToNamespaceFunctions(members) {
@@ -190,9 +193,9 @@ function classStaticMembersToNamespaceFunctions(members) {
           /^public static /,
           type === 'field'
             ? isReadOnly ? 'const ' : 'let '
-            : 'function ' 
+            : 'function '
         );
-      
+
       return {
         area,
         path,
