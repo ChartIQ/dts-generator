@@ -166,7 +166,10 @@ function generate(dataFrom, config = defaultConfig) {
 
   if(postprocessing) definitions = postprocessing(definitions, dataFrom);
 
-	if(collection.filter( issue => issue.type === 'error').length) throw new Error('YOU HAVE FAILED THIS CITY')
+	if(collection.filter( issue => issue.type === 'error').length) 
+    throw new Error('Found errors while building definition file:\n' + 
+    JSON.stringify(collection.filter( issue => issue.type === 'error'), null, '  ')
+    );
 
   return definitions
 }
