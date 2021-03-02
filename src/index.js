@@ -166,10 +166,7 @@ function generate(dataFrom, config = defaultConfig) {
 
   if(postprocessing) definitions = postprocessing(definitions, dataFrom);
 
-	if(collection.filter( issue => issue.type === 'error').length) 
-    throw new Error('Found errors while building definition file:\n' + 
-    JSON.stringify(collection.filter( issue => issue.type === 'error'), null, '  ')
-    );
+  if(collection.filter( issue => issue.type === 'error').length) process.exitCode = 1;
 
   return definitions
 }
