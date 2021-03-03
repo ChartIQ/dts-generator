@@ -1,5 +1,5 @@
 const { values } = require('lodash');
-const { tabLines } = require('../common/common');
+const { checkMutuallyExclusiveTags, tabLines } = require('../common/common');
 const { info, error } = require('../common/logger');
 
 /* Definition */
@@ -92,6 +92,11 @@ function intoClasses(classes, members, options = {}) {
 
   // Generate the class code
   for (const pair of values(pairs)) {
+
+    // Interfaces do not have an 'area', they are not checked
+    if(pair.class.area) checkMutuallyExclusiveTags(pair.class.area, true);
+    
+
     // This can happen when your documented members are all marked as private OR something is not documented.
     if (pair.members.length === 0) {
       info(pair.class, 'Class', `path ${pair.path} has no defined members, nothing will be documented.`);

@@ -1,6 +1,7 @@
 const { groupBy, set, get } = require('lodash');
 const {
   fixType,
+  checkMutuallyExclusiveTags,
   cleanCommentData,
   getParamParts,
   combineDestructuredArguments,
@@ -54,7 +55,10 @@ function createMembersTSDefs(
   const result = [];
   for (const member of members) {
     const comment = member.comment;
+
+    checkMutuallyExclusiveTags(member, false);
     if (/\* @private/.test(comment) && !includePrivate) continue;
+
     const { TSDef, name } = setMemberDefinitions(
       member.definition,
       comment,
