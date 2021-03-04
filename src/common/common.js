@@ -64,6 +64,7 @@ function checkMutuallyExclusiveTags(area, classLike) {
 		'@callback',
     '@default',
     '@inner',
+    '@instance',
     '@member',
     '@memberof',
     '@memberOf',
