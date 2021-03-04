@@ -31,18 +31,20 @@ function collectAllNotedObjects(data) {
   const members = applyMemberRoles(
     [
       ...getCommentAreas(data, '* @memberof '),
-      ...getCommentAreas(data, '* @memberOf '),
-    ],
-    data,
+      ...getCommentAreas(data, '* @memberOf ')
+    ]
   );
 
   const module = getCommentAreas(data, '* @module');
+
+  const unclassified = collectExceptions(getCommentAreas(data, '* @'));
 
   return {
     names,
     types,
     members,
     module,
+    unclassified
   };
 }
 
@@ -61,7 +63,7 @@ function getCommentAreas(data, tag, extension = {}, isDefinitionRequired = true)
    */
   const result = [];
 
-  let pos = -1
+  let pos = -1;
   while ((pos = data.indexOf(tag, pos + 1)) > -1) {
     const startCommentPos = data.lastIndexOf('/**', pos);
     const endCommentPos = data.indexOf('*/', pos) + 2;
@@ -81,6 +83,8 @@ function getCommentAreas(data, tag, extension = {}, isDefinitionRequired = true)
       ...extension,
     }
     result.push(area);
+    
+    pos = endCommentPos;
   };
 
   return result;
@@ -111,9 +115,8 @@ function classifyNamedObjects(names) {
 
 /**
  * @param {Area[]} members
- * @param {string} data
  */
-function applyMemberRoles(members, data) {
+function applyMemberRoles(members) {
   const result = [];
   const isClassMethod = definition => {
     const [, name] = /^\s*(\w*)\s*\(/.exec(definition) || [];
@@ -153,3 +156,45 @@ function applyMemberRoles(members, data) {
 
   return result;
 }
+
+/**
+ * @param {Area[]} members
+ */
+function collectExceptions(members) {
+  const result = [];
+
+  for (const member of members) {
+    const _member = { ...member };
+    const { comment } = member;
+
+    if (comment.includes('* @private')) continue;
+
+    if (
+      !comment.includes('* @name ') &&
+      !comment.includes('* @typedef ') &&
+      !comment.includes('* @callback ') &&
+      !comment.includes('* @memberof ') &&
+      !comment.includes('* @memberOf ') &&
+      !comment.includes('* @external ') &&
+      !comment.includes('* @property ') &&
+      !comment.includes('* @module')
+    ) {
+      if(comment.includes('* @namespace')) {
+        if (
+          !comment.includes('* @namespace WebComponents') &&
+          !comment.includes('The following is a list of ADVANCED injectable methods.')
+        ) {
+          console.error(_member);
+        } else {
+          continue;
+        }
+      }
+
+      result.push(_member);
+    }
+
+  }
+
+  return result;
+}
+
