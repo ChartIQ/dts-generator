@@ -158,14 +158,13 @@ function applyMemberRoles(members) {
 }
 
 /**
- * @param {Area[]} members
+ * @param {Area[]} docs
  */
-function collectExceptions(members) {
+function collectExceptions(docs) {
   const result = [];
 
-  for (const member of members) {
-    const _member = { ...member };
-    const { comment } = member;
+  for (const doc of docs) {
+    const { comment } = doc;
 
     if (comment.includes('* @private')) continue;
 
@@ -188,7 +187,7 @@ function collectExceptions(members) {
           continue;
       }
 
-      result.push(_member);
+      result.push(doc);
     }
 
   }
