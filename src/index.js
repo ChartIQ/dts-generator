@@ -135,6 +135,15 @@ function generate(dataFrom, config = defaultConfig) {
 
   // Grab all required comments into grouped objects
   const notedObjects = collectAllNotedObjects(dataFrom);
+  
+  // Check for unclassified jsdocs
+  if(notedObjects.unclassified.length) {
+	notedObjects.unclassified.forEach((obj) => {
+	  console.error("Found unclassified jsdoc: " + obj.definition);
+	});
+	process.exitCode = 1;
+  }
+
 
   // Convert the data into something that could be used as a definition
   const members = createMembersTSDefs(notedObjects.members, {
