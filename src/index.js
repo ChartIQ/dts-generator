@@ -5,7 +5,7 @@ const { exit } = require('process');
 const { basename } = require('path');
 const { existsSync, readFileSync, writeFileSync } = require('fs');
 
-const { conclusion } = require('./common/logger');
+const { conclusion, collection } = require('./common/logger');
 const { collectAllNotedObjects } = require('./code-analysis/comment-collector');
 const { createModuleTSDefs } = require('./noted-objects-analysis/module-parser');
 const { createMembersTSDefs, createConstructorsTSDefs } = require('./noted-objects-analysis/members-parser');
@@ -135,6 +135,15 @@ function generate(dataFrom, config = defaultConfig) {
 
   // Grab all required comments into grouped objects
   const notedObjects = collectAllNotedObjects(dataFrom);
+  
+  // Check for unclassified jsdocs
+  if(notedObjects.unclassified.length) {
+	notedObjects.unclassified.forEach((obj) => {
+	  console.error("Found unclassified jsdoc: " + obj.definition);
+	});
+	process.exitCode = 1;
+  }
+
 
   // Convert the data into something that could be used as a definition
   const members = createMembersTSDefs(notedObjects.members, {
@@ -150,7 +159,7 @@ function generate(dataFrom, config = defaultConfig) {
   const module = createModuleTSDefs(notedObjects.module, importTagName, exportTagName);
 
   // Include declarations into each other and get a strings
-  const classDefs = intoClasses(classes, [...constructors, ...members]);
+  const classDefs = intoClasses(classes, [...constructors, ...members], { includePrivate });
   const typeDefs = intoTypedefs(types);
   const callbacksDefs = intoCallbacks(callbacks);
   const namespaceDefs = intoNamespaces(namespaces, [
@@ -165,6 +174,9 @@ function generate(dataFrom, config = defaultConfig) {
   let definitions = moduleDefs.map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
 
   if(postprocessing) definitions = postprocessing(definitions, dataFrom);
+
+  if(collection.filter( issue => issue.type === 'error').length) process.exitCode = 1;
+
   return definitions
 }
 
@@ -173,8 +185,8 @@ function generate(dataFrom, config = defaultConfig) {
  */
 
 /**
- * 
- * @param {Definition[]} members 
+ *
+ * @param {Definition[]} members
  * @return {Definition[]}
  */
 function classStaticMembersToNamespaceFunctions(members) {
@@ -190,9 +202,9 @@ function classStaticMembersToNamespaceFunctions(members) {
           /^public static /,
           type === 'field'
             ? isReadOnly ? 'const ' : 'let '
-            : 'function ' 
+            : 'function '
         );
-      
+
       return {
         area,
         path,

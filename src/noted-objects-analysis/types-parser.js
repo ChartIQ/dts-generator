@@ -1,5 +1,5 @@
 const { values, groupBy, set } = require('lodash');
-const { fixType, cleanCommentData } = require('../common/common');
+const { fixType, cleanCommentData, checkMutuallyExclusiveTags } = require('../common/common');
 
 /* Definitions */
 module.exports = {
@@ -25,6 +25,9 @@ function createTypedefsTSDefs(areas) {
 
   for (const area of areas) {
     if (area.type === 'typedef') {
+
+      checkMutuallyExclusiveTags(area, false);
+
       const comment = area.comment;
       const { path, name } = setTypeDefinition(area);
       const fields = getProperties(area.comment);
@@ -55,6 +58,9 @@ function createCallbacksTSDefs(areas) {
 
   for (const area of areas) {
     if (area.type === 'callback') {
+
+      checkMutuallyExclusiveTags(area, false);
+
       const comment = area.comment;
       const { path, name } = setFunctionDefinition(area);
       const fields = getParams(area.comment);

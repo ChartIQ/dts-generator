@@ -26,6 +26,7 @@ module.exports = {
  * @type {LogOut[]}
  */
 const collection = [];
+module.exports.collection = collection;
 
 /* Public */
 /**
