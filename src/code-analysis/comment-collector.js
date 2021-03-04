@@ -179,15 +179,13 @@ function collectExceptions(members) {
       !comment.includes('* @property ') &&
       !comment.includes('* @module')
     ) {
+      // We haven't gotten around to fixing these yet, so skip
       if(comment.includes('* @namespace')) {
         if (
-          !comment.includes('* @namespace WebComponents') &&
-          !comment.includes('The following is a list of ADVANCED injectable methods.')
-        ) {
-          console.error(_member);
-        } else {
+          comment.includes('* @namespace WebComponents') ||
+          comment.includes('The following is a list of ADVANCED injectable methods.')
+        )
           continue;
-        }
       }
 
       result.push(_member);
