@@ -1,6 +1,9 @@
+const { error } = require('./logger');
+
 /* Definition */
 module.exports = {
   tabLines,
+  checkMutuallyExclusiveTags,
   cleanCommentData,
   fixType,
   getDefinition,
@@ -31,6 +34,62 @@ function tabLines(str, tab = '  ') {
   }
 
   return result.join('\n');
+}
+
+/**
+ * Simple Regex to detect a JSDoc comment.
+ * Does not detect wheter the tag is real JSDoc tag just looks for a string in the shape of a tag. 
+ * @type Regex
+ */
+const jsdoc = new RegExp(/@\w+\b/);
+
+/**
+ * Simple Regex to detect the text of the JSDoc comment.
+ * 
+ * Starts from tag and goes until the end of the line.
+ * **NOTE** Does not try to figure out if the comment continues onto the next line so a comment _could_ be incomplete
+ */
+const jsdocText = new RegExp(/@\w+\b.*/g);
+
+function checkMutuallyExclusiveTags(area, classLike) {
+
+  if (area.area) area = area.area;
+  const { comment } = area
+
+  if (!comment) return;
+
+  let jsDocs = comment.split('\n')
+    .map( line => jsdoc.exec(line) && jsdoc.exec(line)[0])
+    .filter( c => !!c )
+
+  const nonClass = [
+		'@callback',
+    '@default',
+    '@inner',
+    '@instance',
+    '@member',
+    '@memberof',
+    '@memberOf',
+    '@static',
+    '@type',
+    '@typedef'
+  ];
+
+  const classish = [
+    '@class',
+    '@constructor',
+    '@namespace'
+  ];
+
+  if(!classLike) {
+    let isClassy = jsDocs.find( line => classish.includes(line));
+    if (isClassy)
+     error(area, area.value, `Comment contains mutually exclusive JSDoc tags. Documented as ${area.type} but contains ${isClassy} tag`)
+  } else {
+    let nonClassy = jsDocs.find( line => nonClass.includes(line));
+    if (nonClassy) error(area, area.value, `Class ${area.value} contains mutually exclusive JSDoc ${nonClassy} tag`)
+  }
+
 }
 
 /**

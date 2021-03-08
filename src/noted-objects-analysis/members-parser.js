@@ -1,6 +1,7 @@
 const { groupBy, set, get } = require('lodash');
 const {
   fixType,
+  checkMutuallyExclusiveTags,
   cleanCommentData,
   getParamParts,
   combineDestructuredArguments,
@@ -44,8 +45,8 @@ const namedFunction = new RegExp(/\w*(?=\s*\()/);
  */
 function createMembersTSDefs(
   members, 
-  { 
-    includePrivate, 
+  {
+    includePrivate,
     expandPropertyDeclarationBasedOnDefault
   } = {}) {
   /**
@@ -54,7 +55,10 @@ function createMembersTSDefs(
   const result = [];
   for (const member of members) {
     const comment = member.comment;
+
+    checkMutuallyExclusiveTags(member, false);
     if (/\* @private/.test(comment) && !includePrivate) continue;
+
     const { TSDef, name } = setMemberDefinitions(
       member.definition,
       comment,

@@ -1,6 +1,6 @@
 const { values } = require('lodash');
-const { tabLines } = require('../common/common');
-const { info } = require('../common/logger');
+const { checkMutuallyExclusiveTags, tabLines } = require('../common/common');
+const { info, error } = require('../common/logger');
 
 /* Definition */
 module.exports = {
@@ -19,7 +19,8 @@ module.exports = {
  * @param {Definition[]} classes
  * @param {Definition[]} members
  */
-function intoClasses(classes, members) {
+function intoClasses(classes, members, options = {}) {
+  const { includePrivate } = options;
   /**
    * @type {Code[]}
    */
@@ -76,7 +77,7 @@ function intoClasses(classes, members) {
       if (!membersLookup[path]) { 
         // Inform only if there is no member either with this path
         // Object properties containing JSDocs are processed separately
-        info(member, 'class member', `name ${member.name} @memberof parameter has not defined object path of "${path}"`);
+        error(member, 'class member', `name ${member.name} @memberof parameter has undefined object path of "${path}"`);
       }
       continue;
     }
@@ -91,8 +92,20 @@ function intoClasses(classes, members) {
 
   // Generate the class code
   for (const pair of values(pairs)) {
+
+    // Interfaces do not have an 'area', they are not checked
+    if(pair.class.area) checkMutuallyExclusiveTags(pair.class.area, true);
+    
+
+    // This can happen when your documented members are all marked as private OR something is not documented.
     if (pair.members.length === 0) {
-      info(pair.class, 'Class', `path ${pair.path} has no defined members`);
+      info(pair.class, 'Class', `path ${pair.path} has no defined members, nothing will be documented.`);
+    }
+
+    // Do not add private classes
+    if (pair.class.comment.includes("@private")) {
+      error(pair.class, pair.class.TSDef, `${pair.path} contains a @private tag`)
+      if (includePrivate) continue;
     }
 
     const code =
