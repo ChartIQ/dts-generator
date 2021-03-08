@@ -56,6 +56,8 @@ function checkMutuallyExclusiveTags(area, classLike) {
   if (area.area) area = area.area;
   const { comment } = area
 
+  if (!comment) return;
+
   let jsDocs = comment.split('\n')
     .map( line => jsdoc.exec(line) && jsdoc.exec(line)[0])
     .filter( c => !!c )
