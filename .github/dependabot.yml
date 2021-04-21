@@ -1,0 +1,17 @@
+version: 2
+updates:
+# Enable Version updates in NPM
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: monthly
+  commit-message:
+    prefix: "NPM Dependency:"
+  target-branch: "develop"
+  open-pull-requests-limit: 10
+  # Who is requested to review the PR in GitHub
+  reviewers:
+  - rmcneely
+  # Who is assigned the PR in Github
+  assignee:
+  - rmcneely
