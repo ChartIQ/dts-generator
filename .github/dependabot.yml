@@ -13,5 +13,5 @@ updates:
   reviewers:
   - rmcneely
   # Who is assigned the PR in Github
-  assignee:
+  assignees:
   - rmcneely
