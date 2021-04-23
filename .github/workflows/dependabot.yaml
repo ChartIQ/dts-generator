@@ -1,0 +1,56 @@
+name: Dependabot
+
+# This "on" event must be pull_request_target in order to have access to GH secrets.
+# See the following: 
+# https://github.blog/changelog/2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-read-only-permissions/
+# https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+on:
+  pull_request_target:
+    branches: [ labeled ]
+
+jobs:
+  create-security-bug-ticket:
+    name: Kanbanize Security Bug tracker
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'security')
+    steps:
+      - shell: bash
+        with: asd
+        run: |
+          curl --location --request POST 'https://cosaic.kanbanize.com/index.php/api/kanbanize/create_new_task/format/json' \
+          --header 'apikey: ${{secrets.KANBANIZE_APIKEY}}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+              "boardid": "15",
+              "title": "[Bug]: Security Vulnerability",
+              "description": ${{ github.event.pullrequest.body }},
+              "color": "F37325",
+              "size": "medium",
+              "tags": "[BUG]",
+              "column": "Ready to Start",
+              "lane": "Ongoing Release"
+          }'
+
+  create-dependency-ticket:
+    name: Kanbanize Dependency tracker
+    runs-on: ubuntu-latest
+    if: contains(github.envent.pull_request.labels.*.name, 'dependencies')
+    steps:
+      - shell: bash
+        with:
+        run: |
+          curl --location --request POST 'https://cosaic.kanbanize.com/index.php/api/kanbanize/create_new_task/format/json' \
+          --header 'apikey: ${{secrets.KANBANIZE_APIKEY}}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+              "boardid": "15",
+              "title": "[Enhancement]: Update Dependencies",
+              "description": ${{ github.event.pullrequest.body }},
+              "color": "77569B",
+              "size": "medium",
+              "tags": "[Enhancement]",
+              "column": "Ready to Start",
+              "lane": "Ongoing Release"
+          }'
+
+      
