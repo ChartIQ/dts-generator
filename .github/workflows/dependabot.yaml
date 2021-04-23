@@ -15,7 +15,6 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'security')
     steps:
       - shell: bash
-        with: asd
         run: |
           curl --location --request POST 'https://cosaic.kanbanize.com/index.php/api/kanbanize/create_new_task/format/json' \
           --header 'apikey: ${{secrets.KANBANIZE_APIKEY}}' \
@@ -34,10 +33,9 @@ jobs:
   create-dependency-ticket:
     name: Kanbanize Dependency tracker
     runs-on: ubuntu-latest
-    if: contains(github.envent.pull_request.labels.*.name, 'dependencies')
+    if: contains(github.event.pull_request.labels.*.name, 'dependencies')
     steps:
       - shell: bash
-        with:
         run: |
           curl --location --request POST 'https://cosaic.kanbanize.com/index.php/api/kanbanize/create_new_task/format/json' \
           --header 'apikey: ${{secrets.KANBANIZE_APIKEY}}' \
