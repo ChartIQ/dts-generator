@@ -90,12 +90,12 @@ function getArgs() {
   ]).run();
 
   if (existsSync(fileFrom) === false) {
-    console.error('Source file does not exists.');
+    console.error('Source file does not exist.');
     exit(1);
   }
 
   if (existsSync(configFile) === false) {
-    console.error('Config file does not exists.');
+    console.error('Config file does not exist.');
     exit(1);
   } else {
     Object.assign(defaultConfig, require(configFile));
