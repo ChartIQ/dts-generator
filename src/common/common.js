@@ -16,7 +16,6 @@ module.exports = {
   getValueType
 };
 
-const { values } = require('lodash');
 
 // Cache for lazy evaluated regExpressions
 const g_re = {};
@@ -50,6 +49,22 @@ const jsdoc = new RegExp(/@\w+\b/);
  * **NOTE** Does not try to figure out if the comment continues onto the next line so a comment _could_ be incomplete
  */
 const jsdocText = new RegExp(/@\w+\b.*/g);
+
+const isClassMethod = '(^\\s*(static|async){0,1}\\s*(?!if\\s)\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"`
+const aFunction = '(function\\s*\\(.*\\))';
+const anArrowFunction = '(\\(.*\\)\\s*\\s*=>)';
+
+/**
+ * Regex that the will test if an expression is a function, arrow function, or function in class declaration.
+ * Used to determine whether an expression is a function
+ *
+ * **NOTE** Will not detect  inline arrow functions
+ * @type {RegExp}
+ */
+const isFunction = new RegExp(`${isClassMethod}|${aFunction}|${anArrowFunction}`);
+
+module.exports.isFunction = isFunction;
+module.exports.isClassMethod = new RegExp(`${isClassMethod}`);
 
 function checkMutuallyExclusiveTags(area, classLike) {
 

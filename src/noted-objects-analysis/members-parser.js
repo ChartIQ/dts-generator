@@ -7,6 +7,7 @@ const {
   combineDestructuredArguments,
   tabLines,
   getPropertyParts,
+  isFunction
 } = require('../common/common');
 
 /* Definition */
@@ -20,17 +21,6 @@ module.exports = {
  * @typedef {import('../common/interfaces').Definition} Definition
  */
 
-/**
- * Regex that the will test if an expression is a function, arrow function, or function in class declaration.
- * Used to determine whether an expression is a function
- *
- * **NOTE** Will not detect  inline arrow functions
- * @type {RegExp}
- */
-const aClassMethod = '(^\\s*(static){0,1}\\s*(?!if\\s)\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"
-const aFunction = '(function\\s*\\(.*\\))';
-const anArrowFunction = '(\\(.*\\)\\s*\\s*=>)';
-const isFunction = new RegExp(`${aClassMethod}|${aFunction}|${anArrowFunction}`);
 
 /**
  * Regex that the will test if an expression is a named function.
@@ -126,6 +116,7 @@ function createConstructorsTSDefs(classes, { expandPropertyDeclarationBasedOnDef
 
 /* Private */
 /**
+ * Takes the evaluated comment data and turns it into the TS definition
  * @param {string} definition
  * @param {string} comment
  * @param {string[]} modifiers
@@ -135,6 +126,13 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   const firstLine = definition.substring(0, definition.indexOf('\n')) || definition;
   let isPropertyType = false;
   const isDeprecated = /\* @deprecated/m.test(comment);
+
+  let foundAsync = false
+  if(definition.includes('async ')) {
+    foundAsync = true
+    console.log(`check definition: ${definition}`)
+    console.log(`check firstline: ${firstLine}`)
+  }
 
   let { name, valueType, value } = getPropertyParts(definition);
 
@@ -197,8 +195,14 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     }, {});
     const returns = getReturns(comment);
 
+    
     if(!name.length && !types.length) {
-      name = namedFunction.exec(firstLine)[0];
+      name = namedFunction.exec(firstLine);
+      if (foundAsync) {
+        console.log(`check name length to get name: ${name}`)
+        console.log(`check firstLine maybe? ${firstLine}`)
+        console.log(`double check all of named function? ${namedFunction.exec(firstLine)}`)
+      }
     }
 
     tail = `(${outputParams(params)})`;
@@ -218,6 +222,9 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     }
   }
 
+  if(foundAsync) {
+    console.log(`check name at the end: ${name}`)
+  }
   return { TSDef: [`${modifiers.join(' ')} ${name}${tail}`.trim()], name };
 
   function outputParams(params) {
