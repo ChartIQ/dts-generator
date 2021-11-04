@@ -50,7 +50,7 @@ const jsdoc = new RegExp(/@\w+\b/);
  */
 const jsdocText = new RegExp(/@\w+\b.*/g);
 
-const isClassMethod = '(^\\s*(static|async){0,1}\\s*(?!if\\s)\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"`
+const isClassMethod = '(^\\s*(static|async|static async){0,1}\\s*(?!if\\s)\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"`
 const aFunction = '(function\\s*\\(.*\\))';
 const anArrowFunction = '(\\(.*\\)\\s*\\s*=>)';
 

@@ -127,13 +127,6 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
   let isPropertyType = false;
   const isDeprecated = /\* @deprecated/m.test(comment);
 
-  let foundAsync = false
-  if(definition.includes('async ')) {
-    foundAsync = true
-    console.log(`check definition: ${definition}`)
-    console.log(`check firstline: ${firstLine}`)
-  }
-
   let { name, valueType, value } = getPropertyParts(definition);
 
   if (constructor === true) {
@@ -198,11 +191,6 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     
     if(!name.length && !types.length) {
       name = namedFunction.exec(firstLine);
-      if (foundAsync) {
-        console.log(`check name length to get name: ${name}`)
-        console.log(`check firstLine maybe? ${firstLine}`)
-        console.log(`double check all of named function? ${namedFunction.exec(firstLine)}`)
-      }
     }
 
     tail = `(${outputParams(params)})`;
