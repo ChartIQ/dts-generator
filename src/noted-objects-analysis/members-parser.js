@@ -210,9 +210,6 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     }
   }
 
-  if(foundAsync) {
-    console.log(`check name at the end: ${name}`)
-  }
   return { TSDef: [`${modifiers.join(' ')} ${name}${tail}`.trim()], name };
 
   function outputParams(params) {
