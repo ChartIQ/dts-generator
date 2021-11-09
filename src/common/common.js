@@ -113,6 +113,7 @@ function checkMutuallyExclusiveTags(area, classLike) {
  */
 function cleanCommentData(comment, skipAdditional = []) {
   const result = [];
+  const n = '\n';
   const skipDefaults = [
     '* @memberof',
     '* @memberOf',
@@ -134,40 +135,41 @@ function cleanCommentData(comment, skipAdditional = []) {
     .replace(/&ndash;/g, "–")
     .replace(/&mdash;/g, "—");
 
-  for (const str of comment.split('\n')) {
-    switch (true) {
-    case str.trim().substring(0, 3) === '/**':
-      result.push('/**');
-      break;
+  result.push('/**');
 
-    case str.trim().substr(-2) === '*/':
-      result.push(' */');
-      break;
+  const interior = comment.substring(comment.indexOf(n)+1, comment.lastIndexOf(n));
+  for (str of interior.split(/\n(?=\s*\* @\w+\b)/gm)) {
+    switch (true) {
 
     case toSkip.some(v => str.includes(v)):
       continue;
 
-    case str.includes('* @param'):
-      result.push(' ' + str.replace(/(\s?\{.*?\})/, '').trim());
-      break;
-
-    case str.includes('* @return'):
-      result.push(' ' + str.replace(/(\s?\{.*?\})/, '').trim());
+    case str.includes('* @param') || str.includes("* @return"):
+      str.replace(/(\s?\{.*?\})/, '')
+        .split(n)
+        .map(m => ` ${m.trim()}`)
+        .forEach(chunk => result.push(chunk))
       break;
 
     case str.includes('* @desc'):
-      result.push(' ' + str.replace(' @desc', '').trim());
+      str.replace(' @desc', '')
+        .split(n)
+        .map(m => ` ${m.trim()}`)
+        .forEach(chunk => result.push(chunk))
       break;
 
     default:
-      result.push(' ' + str.trim());
+      str.split(n)
+        .map(m => ` ${m.trim()}`)
+        .forEach(chunk => result.push(chunk));
     }
   }
 
-  if (result.length < 3) {
+  if (result.length < 2) {
     return '';
   }
 
+  result.push(' */');
   return result.join('\n');
 }
 
