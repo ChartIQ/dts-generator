@@ -8,6 +8,4 @@ examples/*.d.ts
 .project
 
 # Ignore Vim/Nvim swap files
-*~
 **/*~
-**/**/*~
