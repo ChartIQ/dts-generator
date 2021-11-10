@@ -63,8 +63,8 @@ describe('common.js', () => {
 
       const tabbed =
 ` /****
-     * has line
-     * next line
+	 * has line
+	* next line
   **/`;
 
       result = cleanCommentData(tabbed)
