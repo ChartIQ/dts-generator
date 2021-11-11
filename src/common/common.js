@@ -16,7 +16,6 @@ module.exports = {
   getValueType
 };
 
-const { values } = require('lodash');
 
 // Cache for lazy evaluated regExpressions
 const g_re = {};
@@ -50,6 +49,22 @@ const jsdoc = new RegExp(/@\w+\b/);
  * **NOTE** Does not try to figure out if the comment continues onto the next line so a comment _could_ be incomplete
  */
 const jsdocText = new RegExp(/@\w+\b.*/g);
+
+const isClassMethod = '(^\\s*(static|async|static async){0,1}\\s*\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"`
+const aFunction = '(function\\s*\\(.*\\))';
+const anArrowFunction = '(\\(.*\\)\\s*\\s*=>)';
+
+/**
+ * Regex that the will test if an expression is a function, arrow function, or function in class declaration.
+ * Used to determine whether an expression is a function
+ *
+ * **NOTE** Will not detect  inline arrow functions
+ * @type {RegExp}
+ */
+const isFunction = new RegExp(`${isClassMethod}|${aFunction}|${anArrowFunction}`);
+
+module.exports.isFunction = isFunction;
+module.exports.isClassMethod = new RegExp(`${isClassMethod}`);
 
 function checkMutuallyExclusiveTags(area, classLike) {
 
@@ -98,6 +113,7 @@ function checkMutuallyExclusiveTags(area, classLike) {
  */
 function cleanCommentData(comment, skipAdditional = []) {
   const result = [];
+  const n = '\n';
   const skipDefaults = [
     '* @memberof',
     '* @memberOf',
@@ -119,40 +135,41 @@ function cleanCommentData(comment, skipAdditional = []) {
     .replace(/&ndash;/g, "–")
     .replace(/&mdash;/g, "—");
 
-  for (const str of comment.split('\n')) {
-    switch (true) {
-    case str.trim().substring(0, 3) === '/**':
-      result.push('/**');
-      break;
+  result.push('/**');
 
-    case str.trim().substr(-2) === '*/':
-      result.push(' */');
-      break;
+  const interior = comment.substring(comment.indexOf(n)+1, comment.lastIndexOf(n));
+  for (str of interior.split(/\n(?=\s*\* @\w+\b)/gm)) {
+    switch (true) {
 
     case toSkip.some(v => str.includes(v)):
       continue;
 
-    case str.includes('* @param'):
-      result.push(' ' + str.replace(/(\s?\{.*?\})/, '').trim());
-      break;
-
-    case str.includes('* @return'):
-      result.push(' ' + str.replace(/(\s?\{.*?\})/, '').trim());
+    case str.includes('* @param') || str.includes("* @return"):
+      str.replace(/(\s?\{.*?\})/, '')
+        .split(n)
+        .map(m => ` ${m.trim()}`)
+        .forEach(chunk => result.push(chunk))
       break;
 
     case str.includes('* @desc'):
-      result.push(' ' + str.replace(' @desc', '').trim());
+      str.replace(' @desc', '')
+        .split(n)
+        .map(m => ` ${m.trim()}`)
+        .forEach(chunk => result.push(chunk))
       break;
 
     default:
-      result.push(' ' + str.trim());
+      str.split(n)
+        .map(m => ` ${m.trim()}`)
+        .forEach(chunk => result.push(chunk));
     }
   }
 
-  if (result.length < 3) {
+  if (result.length < 2) {
     return '';
   }
 
+  result.push(' */');
   return result.join('\n');
 }
 

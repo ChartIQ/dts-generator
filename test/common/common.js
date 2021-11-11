@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const exp = require('constants');
 
 describe('common.js', () => {
   describe('tabLines', () => {
@@ -44,6 +45,32 @@ describe('common.js', () => {
       expect(result).eql(target);
     });
 
+    it('trim whitespace before the comments', () => {
+      const source =
+` /****
+   * has line
+   * next line
+  **/`;
+
+  const target =
+`/**
+ * has line
+ * next line
+ */`;
+      let result = cleanCommentData(source)
+
+      expect(result).eql(target);
+
+      const tabbed =
+` /****
+	 * has line
+	* next line
+  **/`;
+
+      result = cleanCommentData(tabbed)
+      expect(result).eql(target);
+    })
+
     it('clean @param type', () => {
       const source =
 `/**
@@ -59,6 +86,24 @@ describe('common.js', () => {
       const result = cleanCommentData(source);
 
       expect(result).eql(target);
+
+      const multiLine =
+` /**
+   * has line
+   * @param {string} param describe block that is just so long
+   * that it stretches onto the next line!
+   */`;
+
+      const multiTarget =
+`/**
+ * has line
+ * @param param describe block that is just so long
+ * that it stretches onto the next line!
+ */`;
+
+    const multiResult = cleanCommentData(multiLine)
+    expect(multiResult).eql(multiTarget)
+
     });
 
     it('clean @return and @returns type', () => {

@@ -6,3 +6,6 @@ examples/*.d.ts
 
 # Ignore IDE config
 .project
+
+# Ignore Vim/Nvim swap files
+**/*~

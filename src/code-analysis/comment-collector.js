@@ -4,7 +4,7 @@ module.exports = {
   getCommentAreas
 };
 
-const { getDefinition, getTSDeclaration, clearTSDeclaration } = require('../common/common');
+const { getDefinition, getTSDeclaration, clearTSDeclaration, isClassMethod } = require('../common/common');
 
 /**
  * @typedef {import('../common/interfaces').Area} Area
@@ -118,10 +118,6 @@ function classifyNamedObjects(names) {
  */
 function applyMemberRoles(members) {
   const result = [];
-  const isClassMethod = definition => {
-    const [, name] = /^\s*(\w*)\s*\(/.exec(definition) || [];
-    return name && name !== 'if';
-  };
 
   for (const member of members) {
     const _member = { ...member }
@@ -139,11 +135,12 @@ function applyMemberRoles(members) {
         member.value.includes('.prototype') === false &&
         !/#/.test(member.value) &&
         !member.comment.includes(' @instance') &&
-        !isClassMethod(member.definition)
+        !isClassMethod.test(member.definition)
       )
     ) {
       _member.modifiers.push('static');
     }
+    if (/async/.test(member.definition)) _member.modifiers.push('async')
 
     if (!member.comment.includes(' @type ') && /\(.*\)/.test(member.definition)) {
       _member.type = 'method';

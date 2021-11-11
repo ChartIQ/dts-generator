@@ -119,12 +119,12 @@ describe('members-parser.js', () => {
       ])
     });
 
-    it('process rest parametrs', ()=> {
+    it('process rest parameters', ()=> {
       const source = [
         {
           startCommentPos: 1,
           endCommentPos: 359,
-          comment: 
+          comment:
 `/**
 * Variadic function
 * @param {string} first First string to concatenate
@@ -142,6 +142,32 @@ describe('members-parser.js', () => {
 
       expect(result[0].TSDef).eql([
         "public static concat(first: string, ...others: string[]): string"
+      ])
+    });
+
+    it('work on async functions', () => {
+      const source = [
+        {
+          startCommentPos: 1,
+          endCommentPos: 359,
+          comment:
+`/**
+* Variadic function
+* @param {string} first First string to concatenate
+* @param {...string} others others to concatenate
+* @return {string}
+* @memberof Foo.Bar`,
+          value:  'Foo.Bar',
+          definition: 'async baz(first, ...others){',
+          modifiers: ['public', 'async'],
+          type: 'method'
+        }
+      ]
+
+      const result = createMembersTSDefs(source);
+
+      expect(result[0].TSDef).eql([
+        "public async baz(first: string, ...others: string[]): string"
       ])
     });
 
