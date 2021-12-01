@@ -155,11 +155,11 @@ describe('members-parser.js', () => {
 * Variadic function
 * @param {string} first First string to concatenate
 * @param {...string} others others to concatenate
-* @return {string}
+* @return {Promise}
 * @memberof Foo.Bar`,
           value:  'Foo.Bar',
           definition: 'async baz(first, ...others){',
-          modifiers: ['public', 'async'],
+          modifiers: ['public'],
           type: 'method'
         }
       ]
@@ -167,7 +167,7 @@ describe('members-parser.js', () => {
       const result = createMembersTSDefs(source);
 
       expect(result[0].TSDef).eql([
-        "public async baz(first: string, ...others: string[]): string"
+        "public baz(first: string, ...others: string[]): Promise"
       ])
     });
 

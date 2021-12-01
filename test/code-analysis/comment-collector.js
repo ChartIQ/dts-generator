@@ -220,7 +220,7 @@ static aFunction(arg1, arg2) {};
 /**
  * @memberof Foo.Bar
  * @param {string} arg1
- * @param {number} arg2
+ * @param {number} arg2asdfasfd
  */
 async aFunction(arg1, arg2) {};
 `;
@@ -232,7 +232,7 @@ async aFunction(arg1, arg2) {};
       expect(result.members.length).eql(1);
       expect(result.members[0].value).eql('Foo.Bar');
       expect(result.members[0].type).eql('method');
-      expect(result.members[0].modifiers).eql(['public', 'async']);
+      expect(result.members[0].modifiers).eql(['public']);
       expect(result.members[0].definition).eql('async aFunction(arg1, arg2)');
     });
 
