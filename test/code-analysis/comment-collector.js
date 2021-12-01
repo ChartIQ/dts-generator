@@ -220,7 +220,7 @@ static aFunction(arg1, arg2) {};
 /**
  * @memberof Foo.Bar
  * @param {string} arg1
- * @param {number} arg2asdfasfd
+ * @param {number} arg2
  */
 async aFunction(arg1, arg2) {};
 `;
