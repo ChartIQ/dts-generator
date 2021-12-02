@@ -10,6 +10,8 @@ const {
   isFunction
 } = require('../common/common');
 
+const { info } = require('../common/logger');
+
 /* Definition */
 module.exports = {
   createMembersTSDefs,
@@ -191,6 +193,11 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     
     if(!name.length && !types.length) {
       name = namedFunction.exec(firstLine);
+    }
+
+    if (definition.includes("async") && returns!= "Promise") {
+      let n = Array.isArray(name) ? name[0] : name
+      info([n, returns], 'Invalid Return', 'Async functions should always return a Promise!')
     }
 
     tail = `(${outputParams(params)})`;

@@ -3,6 +3,8 @@ const { expect } = require('chai');
 describe('members-parser.js', () => {
   describe('members', () => {
     const { createMembersTSDefs } = require('../../src/noted-objects-analysis/members-parser');
+    const { info, flush, _testing: { collection } } = require('../../src/common/logger');
+
     it('create TSDef for any member', () => {
       const source = [
         {
@@ -168,6 +170,36 @@ describe('members-parser.js', () => {
 
       expect(result[0].TSDef).eql([
         "public baz(first: string, ...others: string[]): Promise"
+      ])
+    });
+
+    it('log if an async function doesn\'t return a Promise', () => {
+      const source = [
+        {
+          startCommentPos: 1,
+          endCommentPos: 359,
+          comment:
+`/**
+* Variadic function
+* @param {string} first First string to concatenate
+* @param {...string} others others to concatenate
+* @memberof Foo.Bar`,
+          value:  'Foo.Bar',
+          definition: 'async baz(first, ...others){',
+          modifiers: ['public'],
+          type: 'method'
+        }
+      ]
+
+      // Make sure we start from a clean state
+      flush();
+      const result = createMembersTSDefs(source);
+      console.log(collection[0])
+      expect(collection[0].object).eql(['baz', 'void'])
+      expect(collection[0].name).eql('Invalid Return')
+      expect(collection[0].message).eql('Async functions should always return a Promise!')
+      expect(result[0].TSDef).eql([
+        "public baz(first: string, ...others: string[]): void"
       ])
     });
 
