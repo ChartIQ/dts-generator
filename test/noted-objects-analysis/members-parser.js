@@ -194,7 +194,7 @@ describe('members-parser.js', () => {
       // Make sure we start from a clean state
       flush();
       const result = createMembersTSDefs(source);
-      console.log(collection[0])
+
       expect(collection[0].object).eql(['baz', 'void'])
       expect(collection[0].name).eql('Invalid Return')
       expect(collection[0].message).eql('Async functions should always return a Promise!')
