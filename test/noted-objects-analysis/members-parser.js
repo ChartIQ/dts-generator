@@ -195,9 +195,9 @@ describe('members-parser.js', () => {
       flush();
       const result = createMembersTSDefs(source);
 
-      expect(collection[0].object).eql(['baz', 'void'])
+      expect(collection[0].object).eql('Foo.Bar#baz')
       expect(collection[0].name).eql('Invalid Return')
-      expect(collection[0].message).eql('Async functions should always return a Promise!')
+      expect(collection[0].message).eql('Async functions should always return a Promise. Instead returned void')
       expect(result[0].TSDef).eql([
         "public baz(first: string, ...others: string[]): void"
       ])
