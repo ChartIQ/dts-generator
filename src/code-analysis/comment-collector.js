@@ -140,7 +140,6 @@ function applyMemberRoles(members) {
     ) {
       _member.modifiers.push('static');
     }
-    if (/async/.test(member.definition)) _member.modifiers.push('async')
 
     if (!member.comment.includes(' @type ') && /\(.*\)/.test(member.definition)) {
       _member.type = 'method';
