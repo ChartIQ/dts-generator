@@ -195,7 +195,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
       name = namedFunction.exec(firstLine);
     }
 
-    if (definition.includes("async") && returns!= "Promise") {
+    if (definition.includes("async") && !returns.includes("Promise")) {
       const id = `${memberof}#${Array.isArray(name) ? name[0] : name}`
       console.log(`${id}: Async functions should always return a Promise. Instead returned ${returns}`) // @TODO remove this after cleaning up definitions and use debug level
       info(id, 'Invalid Return', `Async functions should always return a Promise. Instead returned ${returns}`)

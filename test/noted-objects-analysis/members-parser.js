@@ -203,6 +203,32 @@ describe('members-parser.js', () => {
       ])
     });
 
+    it('accept async functions that return a typed Promise', () => {
+      const source = [
+        {
+          startCommentPos: 1,
+          endCommentPos: 359,
+          comment:
+`/**
+* Variadic function
+* @param {string} first First string to concatenate
+* @param {...string} others others to concatenate
+* @return {Promise<string>}
+* @memberof Foo.Bar`,
+          value:  'Foo.Bar',
+          definition: 'async baz(first, ...others){',
+          modifiers: ['public'],
+          type: 'method'
+        }
+      ]
+
+      const result = createMembersTSDefs(source);
+
+      expect(result[0].TSDef).eql([
+        "public baz(first: string, ...others: string[]): Promise<string>"
+      ])
+    });
+
     it('process class extension with methods using functions in object property', ()=> {
       const source = [
         {
