@@ -37,14 +37,14 @@ function tabLines(str, tab = '  ') {
 
 /**
  * Simple Regex to detect a JSDoc comment.
- * Does not detect wheter the tag is real JSDoc tag just looks for a string in the shape of a tag. 
+ * Does not detect wheter the tag is real JSDoc tag just looks for a string in the shape of a tag.
  * @type Regex
  */
 const jsdoc = new RegExp(/@\w+\b/);
 
 /**
  * Simple Regex to detect the text of the JSDoc comment.
- * 
+ *
  * Starts from tag and goes until the end of the line.
  * **NOTE** Does not try to figure out if the comment continues onto the next line so a comment _could_ be incomplete
  */
@@ -129,7 +129,8 @@ function cleanCommentData(comment, skipAdditional = []) {
   ];
   const toSkip = [...skipDefaults, ...skipAdditional];
 
-  comment = comment.replace(/<span[^>]*>(.*?)<\/span>/, "$1")
+  //https://regex101.com/r/aAZJcy/2
+  comment = comment.replace(/(?<!```.*)<span[^>]*>(.*)<\/span>|<span[^>]*>(.*)<\/span>(?!.*```)/g, "$1")
     .replace(/\{\@link ([^}]*)\}/g, "$1")
     .replace(/<br>|&bull;/g, "")
     .replace(/&ndash;/g, "–")
@@ -231,21 +232,21 @@ function fixType(type) {
 }
 
 /**
- * If content is first line of property pattern return name of property 
+ * If content is first line of property pattern return name of property
  * Following is considered valid patterns
- * 
+ *
  * foo: {         // object
  * foo: 125       // number
  * foo: '...      // string, can start with " or `
  * Foo.bar = {    // object
  * Foo.bar = 125  // number
  * Foo.bar = '... // string, can start with " or `
- * 
+ *
  * @param {string} content
  * @return { name: string, assignmentType: string, valueType: string };
  */
 function getPropertyParts(content) {
-  let [, name = "", assignmentType, value = ""] = 
+  let [, name = "", assignmentType, value = ""] =
     /^\s*([\w\d.$]+)\s*([=:])\s*([\s\S]*)/.exec(content) || [];
 
   if (assignmentType === "=" && !/\./.test(name)) name = '';
@@ -262,7 +263,7 @@ function getPropertyParts(content) {
  * - string if content starts with ', " or `
  * - any otherwise
  *
- * @param {string} content 
+ * @param {string} content
  * @return {'object' | 'number' | 'string' | 'function' | 'any' }
  */;
 function getValueType(content) {
@@ -341,22 +342,22 @@ function getParamParts(content) {
 
   const [isMatch, type, , optional, name, , value ] = g_re['getParamParts'].exec(content) || [];
   if (!isMatch) return;
-  return { 
+  return {
     type: type.replace(/Object./g, 'Record'),
     isOptional: !!optional,
     name,
-    defaultValue: optional ? value : '' 
+    defaultValue: optional ? value : ''
   };
 }
 
 /**
  * Given JSDoc comment string gets content that follows `@tsdeclaration`
- * 
+ *
  * @param {string} comment comment content
  * @returns {string} returns "clean" tsdeclaration content from comment
- * 
+ *
  * @example
- * 
+ *
  * @tsdeclaration
  * function overloaded(arg: string): number
  * function overloaded(arg: number): string
@@ -364,7 +365,7 @@ function getParamParts(content) {
 function getTSDeclaration(comment) {
   const re = /(?<=@tsdeclaration[\r\n]+)( |\t)*\* ([^@]*)/;
   const [, , declaration = ''] = re.exec(comment) || [];
-  
+
   return declaration
     .replace(/\s*\*\/$/g, '')
     .replace(/( |\t)*\* /g, '');
@@ -372,7 +373,7 @@ function getTSDeclaration(comment) {
 
 /**
  * Given JSDoc comment string removes `@tsdeclaration` part
- * 
+ *
  * @param {string} comment comment content
  * @returns {string} returns comment content without tsdeclaration part
  */
@@ -384,13 +385,13 @@ function clearTSDeclaration(comment) {
 
 /**
  * Given a string of arguments replace destructuring with placeholder
- * 
+ *
  * @param {string} argumentStr
  * @returns {string} returns content with destructurning replaced with placeholder
  */
 function combineDestructuredArguments(argumentStr, placeholder = 'destructured') {
   // const re = /\{(?:[^)(]+|\{(?:[^)(]+|\{[^)(]*\})*\})*\}/g;
-  // 5 level deep matching {}, to have more levels use 
+  // 5 level deep matching {}, to have more levels use
   re = new RegExp(
     '{([^{}]*|' + // opening level 1
     '{([^{}]*|' + // 2
@@ -430,7 +431,7 @@ function getObjectDef(str) {
     if (char === '}') open--;
     if (seenOpen && open === 0) {
       return output.join('');
-    } 
+    }
     cnt++;
   }
 }
