@@ -232,6 +232,33 @@ describe('common.js', () => {
 
       expect(result).eql(target);
     });
+
+	  describe('replace <span> tags', function(){
+		  it('should replace all span tags with their innerText', function(){
+			  const source =
+`/**
+ *	<span>expected1</span> <span>expected2</span>
+ */`;
+			  const target =
+`/**
+ *	expected1 expected2
+ */`;
+			  const result = cleanCommentData(source);
+			  expect(result).eql(target);
+		  });
+		  it('should not replace span tags within code blocks', function(){
+			  const source =
+`/**
+ *	<span>expected1</span> \`\`\`<span>literal code block</span>\`\`\`
+ */`;
+			  const target =
+`/**
+ *	expected1 \`\`\`<span>literal code block</span>\`\`\`
+ */`;
+			  const result = cleanCommentData(source);
+			  expect(result).eql(target);
+		  });
+	  });
   });
 
   describe('fixType', () => {

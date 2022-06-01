@@ -129,8 +129,8 @@ function cleanCommentData(comment, skipAdditional = []) {
   ];
   const toSkip = [...skipDefaults, ...skipAdditional];
 
-  //https://regex101.com/r/aAZJcy/2
-  comment = comment.replace(/(?<!```.*)<span[^>]*>(.*)<\/span>|<span[^>]*>(.*)<\/span>(?!.*```)/g, "$1")
+  //https://regex101.com/r/aAZJcy/3
+  comment = comment.replace(/(?<!```.*)<span[^>]*>(.*?)<\/span>|<span[^>]*>(.*?)<\/span>(?!.*```)/g, "$1")
     .replace(/\{\@link ([^}]*)\}/g, "$1")
     .replace(/<br>|&bull;/g, "")
     .replace(/&ndash;/g, "–")
