@@ -73,7 +73,7 @@ describe('types-parser.js', () => {
         comment: `
 /**
  * @typedef Namespace~SomeType
- * @property {string} param1 description
+ * @property {string} [param1] description
  *    and on next line [[10.05, 15, {...}],[10.06, 10, {...}],...]
  */`,
         value: 'Namespace~SomeType',
@@ -87,7 +87,7 @@ describe('types-parser.js', () => {
       expect(result[0].fields.length).eql(1);
       expect(result[0].fields[0].type).eql('string');
       expect(result[0].fields[0].name).eql('param1');
-      expect(result[0].fields[0].description).eql('description \n * and on next line [[10.05, 15, {...}],[10.06, 10, {...}],...]');
+      expect(result[0].fields[0].description).eql('description\n * and on next line [[10.05, 15, {...}],[10.06, 10, {...}],...]');
       expect(result[0].fields[0].value).eql(null);
       expect(result[0].fields[0].opt).eql(true);
     });
