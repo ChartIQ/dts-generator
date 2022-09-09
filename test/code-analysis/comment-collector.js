@@ -159,7 +159,6 @@ Foo.Bar.method = (arg1, arg2) => {};
 `;
 
       const result = collectAllNotedObjects(source);
-      console.log(result)
 
       expect(result.names.length).eql(0);
       expect(result.types.length).eql(0);
@@ -181,7 +180,6 @@ Foo.Bar.method = (arg1, arg2) => {};
 instanceMethod(arg1, arg2) {};
 `;
       const result = collectAllNotedObjects(source);
-      console.log(result.members[0]);
 
       expect(result.names.length).eql(0);
       expect(result.types.length).eql(0);
@@ -203,7 +201,6 @@ instanceMethod(arg1, arg2) {};
 static aFunction(arg1, arg2) {};
 `;
       const result = collectAllNotedObjects(source);
-      console.log(result.members[0]);
 
       expect(result.names.length).eql(0);
       expect(result.types.length).eql(0);
@@ -225,7 +222,6 @@ static aFunction(arg1, arg2) {};
 async aFunction(arg1, arg2) {};
 `;
       const result = collectAllNotedObjects(source);
-      console.log(result.members[0]);
 
       expect(result.names.length).eql(0);
       expect(result.types.length).eql(0);

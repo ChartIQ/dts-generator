@@ -123,8 +123,12 @@ function getProperties(comment) {
 
   let pos = -1
   while ((pos = comment.indexOf('@property', pos + 1)) > -1) {
-    const propertyStr = comment.substring(pos, comment.indexOf('\n', pos));
-    const deconstruction = /\{(.*?:)?(.*?)\}\s*(\[[A-z0-9\_=\'\"\s]+\]|[A-z0-9\_=\'\"]+)\s*(.*)/g.exec(propertyStr);
+    const nextPropertyIndex = comment.indexOf('@property', pos + 1);
+    const propertyStr = comment
+      .substring(pos, nextPropertyIndex < 0 ? comment.length - 1 : nextPropertyIndex)
+      .replace(/\n\s*\*\s*/g, "\n * ") // reduce whitespace around *
+      .replace(/\s\*\s$/, ""); // remove last empty line
+    const deconstruction = /\{(.*?:)?(.*?)\}\s+(\[[\w\_=\'\"\s]+\]|[\w\_=\'\"]+)\s*([\s\S]*)/g.exec(propertyStr);
 
     if (deconstruction && deconstruction.length === 5) {
       const type = fixType(deconstruction[2].trim());
