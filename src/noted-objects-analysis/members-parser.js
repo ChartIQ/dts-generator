@@ -153,13 +153,13 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
     const types = getParams(comment);
     const typeArr = Object.keys(types);
-    const [, memberof] = /memberof (.*)/.exec(comment) || [];
+    const [, memberof] = /member[Oo]f (.*)/.exec(comment) || [];
 
     if (!isDeprecated && Object.keys(types).length !== args.length) {
       console.log(
         'TSgen: Parameter length of JSDocs (' + Object.keys(types).length + ') ' +
         'and definition arguments (' + args.length + ') ' +
-        'do not match for ' + memberof + ' ' + definition
+        'do not match for function ' + definition
       );
     }
 
@@ -170,7 +170,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
       if (!isDeprecated && arg.replace(/^\.{3}/, '') !== name && arg !== "destructured") {
         console.log(
           'TSgen: Parameter ' + arg + ' in definition is not the same as in JSDoc ' + name +
-          ' for the ' + memberof + ' ' + definition
+          ' for the function ' + definition
         );
       }
 
@@ -391,7 +391,10 @@ function getTSPropertyDef(str) {
   }
 
   // Check if property object has properties identified with comments
-  const types = getCommentAreas(objDefStr, '* @memberof ');
+  const types = [
+      ...getCommentAreas(objDefStr, '* @memberof '),
+      ...getCommentAreas(objDefStr, '* @memberOf ')
+  ]
   const objectDefinitionContainsJSDocs = types.length > 0;
   if (objectDefinitionContainsJSDocs) { 
     const tsDefs = createMembersTSDefs(types);
