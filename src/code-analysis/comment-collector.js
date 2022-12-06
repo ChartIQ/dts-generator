@@ -4,7 +4,13 @@ module.exports = {
   getCommentAreas
 };
 
-const { getDefinition, getTSDeclaration, clearTSDeclaration, isClassMethod } = require('../common/common');
+const {
+		getDefinition,
+		getTSDeclaration,
+		clearTSDeclaration,
+		clearJScrambler,
+		isClassMethod
+	} = require('../common/common');
 
 /**
  * @typedef {import('../common/interfaces').Area} Area
@@ -75,7 +81,7 @@ function getCommentAreas(data, tag, extension = {}, isDefinitionRequired = true)
     const area = {
       startCommentPos,
       endCommentPos,
-      comment: clearTSDeclaration(comment),
+      comment: clearTSDeclaration(clearJScrambler(comment)),
       value,
       definition: isDefinitionRequired ? definition : '',
       modifiers: [],

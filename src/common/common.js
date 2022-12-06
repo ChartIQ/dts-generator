@@ -10,6 +10,7 @@ module.exports = {
   getParamParts,
   getTSDeclaration,
   clearTSDeclaration,
+  clearJScrambler,
   combineDestructuredArguments,
   getObjectDef,
   getPropertyParts,
@@ -379,6 +380,18 @@ function getTSDeclaration(comment) {
  */
 function clearTSDeclaration(comment) {
   re = / \* @tsdeclaration[\r\n]+( |\t)*\* ([\s\S]*?)(?= \*\/| \* @)/m;
+
+  return comment.replace(re, '');
+}
+
+/**
+ * Given JSDoc comment string removes `@jscrambler` part
+ *
+ * @param {string} comment comment content
+ * @returns {string} returns comment content without jscrambler part
+ */
+function clearJScrambler(comment) {
+  re = / \* @jscrambler( |\t)*([\s\S]*?)(?= \*\/| \* )/m;
 
   return comment.replace(re, '');
 }
