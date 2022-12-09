@@ -115,10 +115,13 @@ function classifyNamedObjects(names) {
     // }
 
     if (named.comment.includes(' @function') ||
-    	(named.comment.includes(' @name') &&
-    	!named.comment.includes(' @class') &&
-   		!named.comment.includes(' @constructor') &&
-    	!named.comment.includes(' @namespace'))) {
+        (
+            named.comment.includes(' @name') &&
+            !named.comment.includes(' @class') &&
+            !named.comment.includes(' @constructor') &&
+            !named.comment.includes(' @namespace')
+        )
+	) {
        result.push({ ...named, type: 'function' });
        continue;
     }

@@ -78,7 +78,7 @@ function checkMutuallyExclusiveTags(area, classLike) {
     .filter( c => !!c )
 
   const nonClass = [
-	'@callback',
+    '@callback',
     '@default',
     '@inner',
     '@instance',

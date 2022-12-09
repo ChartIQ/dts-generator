@@ -17,7 +17,7 @@ class Simple {
          * Completely contrived but shows arrow function and default argument
          * @param {boolean} required A necessary first argument
          * @param {string} [optional = string]
-		 * @return {string}
+         * @return {string}
          * @memberof Simple#
          */
         this.check = (required, optional = 'nice to have') => {
