@@ -16,6 +16,7 @@ const { info } = require('../common/logger');
 module.exports = {
   createMembersTSDefs,
   createConstructorsTSDefs,
+  createFunctionsTSDefs
 };
 
 /**
@@ -28,7 +29,7 @@ module.exports = {
  * Regex that the will test if an expression is a named function.
  * @type {RegExp}
  */
-const namedFunction = new RegExp(/\w*(?=\s*\()/);
+const namedFunction = new RegExp(/[$0-9A-Za-z_]*(?=\s*\()/);
 
 /* Public */
 /**
@@ -116,6 +117,45 @@ function createConstructorsTSDefs(classes, { expandPropertyDeclarationBasedOnDef
   return result;
 }
 
+/* Public */
+/**
+ * @param {Area[]} areas
+ */
+function createFunctionsTSDefs(members) {
+  /**
+   * @type {Definition[]}
+   */
+  const result = [];
+  for (const member of members) {
+    const comment = member.comment;
+
+    if (member.type !== 'function') continue;
+
+    const { TSDef, name } = setMemberDefinitions(
+      member.definition,
+      comment,
+      member.modifiers
+    );
+    const path = member.value;
+
+    TSDef.forEach((def, i, arr) => {
+    	def = def.replace(new RegExp(`.*\\(`), "(");
+    	arr[i] = `export function ${path}${def}`;
+    });
+
+    const definition = {
+      area: member,
+      TSDef,
+      comment: cleanCommentData(comment),
+      path,
+      name,
+    };
+    result.push(definition);
+  }
+
+  return result;
+}
+
 /* Private */
 /**
  * Takes the evaluated comment data and turns it into the TS definition
@@ -126,7 +166,7 @@ function createConstructorsTSDefs(classes, { expandPropertyDeclarationBasedOnDef
  */
 function setMemberDefinitions(definition, comment, modifiers, constructor = false, expand) {
   const firstLine = definition.substring(0, definition.indexOf('\n')) || definition;
-  let isPropertyType = false;
+
   const isDeprecated = /\* @deprecated/m.test(comment);
 
   let { name, valueType, value } = getPropertyParts(definition);

@@ -10,7 +10,6 @@ module.exports = {
   getParamParts,
   getTSDeclaration,
   clearTSDeclaration,
-  clearJScrambler,
   combineDestructuredArguments,
   getObjectDef,
   getPropertyParts,
@@ -52,7 +51,7 @@ const jsdoc = new RegExp(/@\w+\b/);
 const jsdocText = new RegExp(/@\w+\b.*/g);
 
 const isClassMethod = '(^\\s*(static|async|static async){0,1}\\s*\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"`
-const aFunction = '(function\\s*\\(.*\\))';
+const aFunction = '(function(\\s*[$0-9A-Za-z_]+)?\\s*\\(.*\\))';
 const anArrowFunction = '(\\(.*\\)\\s*\\s*=>)';
 
 /**
@@ -79,7 +78,7 @@ function checkMutuallyExclusiveTags(area, classLike) {
     .filter( c => !!c )
 
   const nonClass = [
-		'@callback',
+	'@callback',
     '@default',
     '@inner',
     '@instance',
@@ -88,7 +87,8 @@ function checkMutuallyExclusiveTags(area, classLike) {
     '@memberOf',
     '@static',
     '@type',
-    '@typedef'
+    '@typedef',
+    '@function'
   ];
 
   const classish = [
@@ -120,6 +120,7 @@ function cleanCommentData(comment, skipAdditional = []) {
     '* @memberOf',
     '* @name',
     '* @namespace',
+    '* @class',
     '* @constructor',
     '* @typedef',
     '* @type',
@@ -127,7 +128,9 @@ function cleanCommentData(comment, skipAdditional = []) {
     '* @default',
     '* @alias',
     '* @inner',
-  ];
+    '* @function',
+    '* @jscrambler'
+   ];
   const toSkip = [...skipDefaults, ...skipAdditional];
 
   //https://regex101.com/r/aAZJcy/3
@@ -380,18 +383,6 @@ function getTSDeclaration(comment) {
  */
 function clearTSDeclaration(comment) {
   re = / \* @tsdeclaration[\r\n]+( |\t)*\* ([\s\S]*?)(?= \*\/| \* @)/m;
-
-  return comment.replace(re, '');
-}
-
-/**
- * Given JSDoc comment string removes `@jscrambler` part
- *
- * @param {string} comment comment content
- * @returns {string} returns comment content without jscrambler part
- */
-function clearJScrambler(comment) {
-  re = / \* @jscrambler( |\t)*([\s\S]*?)(?= \*\/| \* )/m;
 
   return comment.replace(re, '');
 }

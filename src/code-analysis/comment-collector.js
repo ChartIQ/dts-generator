@@ -25,7 +25,10 @@ const {
  */
 function collectAllNotedObjects(data) {
   // Collect all namespaces into collection
-  const names = classifyNamedObjects(getCommentAreas(data, '* @name '));
+  const names = [
+	  ...classifyNamedObjects(getCommentAreas(data, '* @name ')),
+	  ...classifyNamedObjects(getCommentAreas(data, '* @function ')),
+  ];
 
   // Collect all callback, typedef
   const types = [
@@ -81,7 +84,7 @@ function getCommentAreas(data, tag, extension = {}, isDefinitionRequired = true)
     const area = {
       startCommentPos,
       endCommentPos,
-      comment: clearTSDeclaration(clearJScrambler(comment)),
+      comment: clearTSDeclaration(comment),
       value,
       definition: isDefinitionRequired ? definition : '',
       modifiers: [],
@@ -110,6 +113,15 @@ function classifyNamedObjects(names) {
     // if (named.comment.includes(' @constructor')) {
     //   result.push({ ...named, type: 'class' });
     // }
+
+    if (named.comment.includes(' @function') ||
+    	(named.comment.includes(' @name') &&
+    	!named.comment.includes(' @class') &&
+   		!named.comment.includes(' @constructor') &&
+    	!named.comment.includes(' @namespace'))) {
+       result.push({ ...named, type: 'function' });
+       continue;
+    }
 
     // In the case that currently there is no restriction on this tag, this will be added as both objects.
     result.push({ ...named, type: 'namespace' });
@@ -178,6 +190,7 @@ function collectExceptions(docs) {
       !comment.includes('* @memberOf ') &&
       !comment.includes('* @external ') &&
       !comment.includes('* @property ') &&
+      !comment.includes('* @function ') &&
       !comment.includes('* @module')
     ) {
       // We haven't gotten around to fixing these yet, so skip

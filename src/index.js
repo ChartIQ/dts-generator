@@ -8,7 +8,7 @@ const { existsSync, readFileSync, writeFileSync } = require('fs');
 const { conclusion, collection } = require('./common/logger');
 const { collectAllNotedObjects } = require('./code-analysis/comment-collector');
 const { createModuleTSDefs } = require('./noted-objects-analysis/module-parser');
-const { createMembersTSDefs, createConstructorsTSDefs } = require('./noted-objects-analysis/members-parser');
+const { createMembersTSDefs, createConstructorsTSDefs, createFunctionsTSDefs } = require('./noted-objects-analysis/members-parser');
 const { createNamespacesTSDefs, createClassesTSDefs } = require('./noted-objects-analysis/named-parser');
 const { createTypedefsTSDefs, createCallbacksTSDefs } = require('./noted-objects-analysis/types-parser');
 const { intoClasses } = require('./merge-analysis/into-classes');
@@ -135,7 +135,7 @@ function generate(dataFrom, config = defaultConfig) {
 
   // Grab all required comments into grouped objects
   const notedObjects = collectAllNotedObjects(dataFrom);
-  
+
   // Check for unclassified jsdocs
   if(notedObjects.unclassified.length) {
 	notedObjects.unclassified.forEach((obj) => {
@@ -156,12 +156,14 @@ function generate(dataFrom, config = defaultConfig) {
   const classes = createClassesTSDefs(notedObjects.names);
   const types = createTypedefsTSDefs(notedObjects.types);
   const callbacks = createCallbacksTSDefs(notedObjects.types);
+  const functions = createFunctionsTSDefs(notedObjects.names);
   const module = createModuleTSDefs(notedObjects.module, importTagName, exportTagName);
 
   // Include declarations into each other and get a strings
   const classDefs = intoClasses(classes, [...constructors, ...members], { includePrivate });
   const typeDefs = intoTypedefs(types);
   const callbacksDefs = intoCallbacks(callbacks);
+  const functionDefs = intoClasses(functions, []);
   const namespaceDefs = intoNamespaces(namespaces, [
     ...typeDefs,
     ...callbacksDefs,
@@ -171,7 +173,7 @@ function generate(dataFrom, config = defaultConfig) {
   const moduleDefs = intoModules(module, namespaceDefs);
 
   // Join all into one TS declarations file and save it
-  let definitions = moduleDefs.map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
+  let definitions = [...functionDefs, ...moduleDefs].map(def => def.code).join('\n').replace(/\n(\s+)\n/g, '\n');
 
   if(postprocessing) definitions = postprocessing(definitions, dataFrom);
 
