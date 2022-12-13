@@ -128,6 +128,7 @@ function cleanCommentData(comment, skipAdditional = []) {
     '* @default',
     '* @alias',
     '* @inner',
+    '* @instance',
     '* @function',
     '* @jscrambler'
    ];
