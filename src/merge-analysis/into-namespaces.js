@@ -71,7 +71,7 @@ function intoNamespaces(namespaces, theDefs) {
 
     // For the members that has no defined namespace
     if (path !== '' && namespace === null) {
-      info(namespace, 'Namespace', `has no definition for members by ${path}, created automatically`);
+      info(namespace, 'Namespace', `path ${path} has no definition for members, created automatically`);
       code =
 `export namespace ${path} {
 ${members.map(c => tabLines(c.code)).join('\n\n')}

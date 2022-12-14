@@ -93,12 +93,16 @@ function intoClasses(classes, members, options = {}) {
   // Generate the class code
   for (const pair of values(pairs)) {
 
+    let isFunc = false;
+
     // Interfaces do not have an 'area', they are not checked
-    if(pair.class.area) checkMutuallyExclusiveTags(pair.class.area, true);
-    
+    if(pair.class.area) {
+    	isFunc = pair.class.area.type === "function";
+    	if (!isFunc) checkMutuallyExclusiveTags(pair.class.area, true);
+    }
 
     // This can happen when your documented members are all marked as private OR something is not documented.
-    if (pair.members.length === 0) {
+    if (!isFunc && pair.members.length === 0) {
       info(pair.class, 'Class', `path ${pair.path} has no defined members, nothing will be documented.`);
     }
 
@@ -108,7 +112,12 @@ function intoClasses(classes, members, options = {}) {
       if (includePrivate) continue;
     }
 
-    const code =
+    const code = isFunc
+		?
+`${pair.class.comment}
+${(pair.class.area.tsdeclarationOverwrite ? pair.class.area.tsdeclarationOverwrite : pair.class.TSDef[0])}
+`
+		:
 `${pair.class.comment}
 ${pair.class.TSDef.join('')} {
 ${pair.members.map(v =>

@@ -1,6 +1,7 @@
 /**
  * A simple class with a method and a property
  * @name Simple
+ * @namespace
  */
 function Simple() {}
 

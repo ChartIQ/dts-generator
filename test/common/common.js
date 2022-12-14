@@ -233,6 +233,39 @@ describe('common.js', () => {
       expect(result).eql(target);
     });
 
+    it('skip @function tag line', () => {
+      const source =
+`/**
+ * has line
+ * @function
+ */`;
+      const target =
+`/**
+ * has line
+ */`;
+
+      const result = cleanCommentData(source);
+
+      expect(result).eql(target);
+    });
+    
+
+    it('skip @jscrambler tag line', () => {
+      const source =
+`/**
+ * has line
+ * @jscrambler ENABLE
+ */`;
+      const target =
+`/**
+ * has line
+ */`;
+
+      const result = cleanCommentData(source);
+
+      expect(result).eql(target);
+    });
+
 	  describe('replace <span> tags', function(){
 		  it('should replace all span tags with their innerText', function(){
 			  const source =
