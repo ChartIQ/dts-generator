@@ -104,6 +104,7 @@ function intoClasses(classes, members, options = {}) {
     // This can happen when your documented members are all marked as private OR something is not documented.
     if (!isFunc && pair.members.length === 0) {
       info(pair.class, 'Class', `path ${pair.path} has no defined members, nothing will be documented.`);
+      continue;
     }
 
     // Do not add private classes
