@@ -69,7 +69,7 @@ describe('into-classes.js', () => {
     const result = intoClasses(classes, members);
 
     it('get correct class params', () => {
-      expect(result.length).eql(2); // 2 for classes; Class 'Some.AnotherClass' has no defined members
+      expect(result.length).eql(2); // 1 for classes, 1 for interface 'Some.AnotherClass'. Class 'Some.NonsenceClass' has no defined members and is skipped
       expect(result[0].path).eql(['Some']);
       expect(result[1].path).eql(['Some']);
     });
