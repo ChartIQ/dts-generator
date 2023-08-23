@@ -173,7 +173,7 @@ describe('members-parser.js', () => {
       ])
     });
 
-    it('log if an async function doesn\'t return a Promise', () => {
+    it('automatically return Promise<void> if no return specified on an async function', () => {
       const source = [
         {
           startCommentPos: 1,
@@ -191,15 +191,41 @@ describe('members-parser.js', () => {
         }
       ]
 
+      const result = createMembersTSDefs(source);
+
+      expect(result[0].TSDef).eql([
+        "public baz(first: string, ...others: string[]): Promise<void>"
+      ])
+    });
+
+    it('log if an async function doesn\'t return a Promise', () => {
+      const source = [
+        {
+          startCommentPos: 1,
+          endCommentPos: 359,
+          comment:
+`/**
+* Variadic function
+* @param {string} first First string to concatenate
+* @param {...string} others others to concatenate
+* @return {string}
+* @memberof Foo.Bar`,
+          value:  'Foo.Bar',
+          definition: 'async baz(first, ...others){',
+          modifiers: ['public'],
+          type: 'method'
+        }
+      ]
+
       // Make sure we start from a clean state
       flush();
       const result = createMembersTSDefs(source);
 
       expect(collection[0].object).eql('Foo.Bar#baz')
       expect(collection[0].name).eql('Invalid Return')
-      expect(collection[0].message).eql('Async functions should always return a Promise. Instead returned void')
+      expect(collection[0].message).eql('Async functions should always return a Promise. Instead returned string')
       expect(result[0].TSDef).eql([
-        "public baz(first: string, ...others: string[]): void"
+        "public baz(first: string, ...others: string[]): string"
       ])
     });
 

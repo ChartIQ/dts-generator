@@ -78,7 +78,7 @@ describe('into-classes.js', () => {
       expect(result[0].code.indexOf('class SomeClass {')).not.eql(-1);
     });
 
-    it('set constcuctor propperly', () => {
+    it('set constcuctor properly', () => {
       expect(result[0].code.indexOf('constructor(arg1: string, arg2: number)')).not.eql(-1);
       expect(result[0].code.indexOf('constructor(arg1: string, arg2: number):')).eql(-1);
     });
