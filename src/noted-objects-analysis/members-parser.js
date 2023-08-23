@@ -228,7 +228,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
       return {...acc, [(name || arg) + (opt ? '?' : '')]: type ? type : 'any' };
     }, {});
-    const returns = getReturns(comment);
+    let returns = getReturns(comment);
 
     
     if(!name.length && !types.length) {
@@ -236,9 +236,13 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     }
 
     if (definition.includes("async") && !returns.includes("Promise")) {
-      const id = `${memberof}#${Array.isArray(name) ? name[0] : name}`
-      console.log(`${id}: Async functions should always return a Promise. Instead returned ${returns}`) // @TODO remove this after cleaning up definitions and use debug level
-      info(id, 'Invalid Return', `Async functions should always return a Promise. Instead returned ${returns}`)
+      if (returns === "void") {
+		  returns = "Promise<void>";
+	  } else {
+	      const id = `${memberof}#${Array.isArray(name) ? name[0] : name}`
+	      console.log(`${id}: Async functions should always return a Promise. Instead returned ${returns}`) // @TODO remove this after cleaning up definitions and use debug level
+	      info(id, 'Invalid Return', `Async functions should always return a Promise. Instead returned ${returns}`)
+	  }
     }
 
     tail = `(${outputParams(params)})`;

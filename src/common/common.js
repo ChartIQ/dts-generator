@@ -129,6 +129,7 @@ function cleanCommentData(comment, skipAdditional = []) {
     '* @alias',
     '* @inner',
     '* @instance',
+    //'* @static',
     '* @function',
     '* @jscrambler'
    ];
@@ -147,7 +148,7 @@ function cleanCommentData(comment, skipAdditional = []) {
   for (str of interior.split(/\n(?=\s*\* @\w+\b)/gm)) {
     switch (true) {
 
-    case toSkip.some(v => str.includes(v)):
+    case toSkip.some(v => `${str} `.includes(`${v} `) || `${str}\n`.includes(`${v}\n`)):
       continue;
 
     case str.includes('* @param') || str.includes("* @return"):
@@ -159,6 +160,13 @@ function cleanCommentData(comment, skipAdditional = []) {
 
     case str.includes('* @desc'):
       str.replace(' @desc', '')
+        .split(n)
+        .map(m => ` ${m.trim()}`)
+        .forEach(chunk => result.push(chunk))
+      break;
+
+    case str.includes('* @classdesc'):
+       str.replace(' @classdesc', '')
         .split(n)
         .map(m => ` ${m.trim()}`)
         .forEach(chunk => result.push(chunk))
