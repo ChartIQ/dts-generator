@@ -51,8 +51,8 @@ function createClassesTSDefs(areas) {
   for (const area of areas) {
     if (area.type === 'class') {
       const comment = area.comment;
-      const { path, name } = setClassDefinition(area);
-      const TSDef = [`${path.length === 0 ? 'export ' : ''}class ${name}`];
+      const { path, name, extending } = setClassDefinition(area);
+      const TSDef = [`${path.length === 0 ? 'export ' : ''}class ${name}${extending ? ' extends ' : ''}${extending}`];
 
       result.push({
         area,
@@ -70,16 +70,21 @@ function createClassesTSDefs(areas) {
 /* Private */
 /**
  * @param {Area} area
- * @returns {{path: string[], name: string}}
+ * @returns {{path: string[], name: string, extending: string}}
  */
 function setClassDefinition(area) {
   const _value = area.value.split('.')
   const name = _([..._value]).reverse().head();
   const path = _([..._value]).reverse().tail().reverse().value();
 
+  const _comment = area.comment;
+  const start = _comment.indexOf('@extends ');
+  const extending = (start > -1) ? _comment.substring(start, _comment.indexOf('\n', start)).split(' ')[1] : "";
+
   return {
     path,
     // @ts-ignore
     name,
+    extending
   }
 }
