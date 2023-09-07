@@ -94,7 +94,7 @@ ${members.map(c => tabLines(c.code)).join('\n\n')}
     if (namespace !== null && members.length === 0) {
       continue;
     }
-    
+
     // remove statics
     if(
     	namespace === null &&

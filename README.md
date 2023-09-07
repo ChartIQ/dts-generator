@@ -17,7 +17,7 @@ $ tsdec-gen --from=path/to/file.js --to=path/to/file.d.ts
 
 #### Use debug option
 
-The debug option gets a value from 0 to 4 with different depth of detailization.
+The debug option gets a value from 0 to 4 with different depth of detail.
 
 * `0` :: no output
 * `1` :: only amount of output from different objects
@@ -61,9 +61,9 @@ fs.writeFileSync(fileTo, dataTo);
 
 ## JSDoc rules
 
-JSDoc has to stay right before the declarad object.
+JSDoc has to stay right before the declared object.
 All non-namespace `@typedef`, `@callback` and classes will be at null-level without a namespace.
-Using a semicoin is reqiored. It is very important for class properties.
+Using a semicolon is reqiored. It is very important for class properties.
 
 Correct:
 
@@ -169,7 +169,7 @@ namespace Super {
 
 ### Callbacks and typedefs
 
-All callbacks converts into `function` declaration. All typedefs declaretes as an `interface`.
+All callbacks converts into `function` declaration. All typedefs declarations as an `interface`.
 
 Exmaple:
 
@@ -226,7 +226,7 @@ namespace Super {
 
 ### Class members
 
-Class members converts from `@constructor` and `@memberof` attributes. It also collects a possible modifiers: `@private` (`public` by default), `@readonly`. If definition is unper `.prototype.` it become instance member, `static` otherwise.
+Class members converts from `@constructor` and `@memberof` attributes. It also collects a possible modifiers: `@private` (`public` by default), `@readonly`. If definition is member of `.prototype.` it become instance member, `static` otherwise.
 
 Example:
 
@@ -288,9 +288,9 @@ namespace Super {
 
 ## Tests
 
-All used method covered with positive expectation tests. Used `Mocha` framework with `Chai` module. All tests contained in `./test/` folder. The folder srtucture inside is aligned to src structure.
+All used method covered with positive expectation tests. Used `Mocha` framework with `Chai` module. All tests contained in `./test/` folder. The folder structure inside is aligned to src structure.
 
-Tu run use:
+To run use:
 
 ```bash
 $ npm test

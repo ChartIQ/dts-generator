@@ -28,6 +28,7 @@ function collectAllNotedObjects(data) {
   const names = [
 	  ...classifyNamedObjects(getCommentAreas(data, '* @name ')),
 	  ...classifyNamedObjects(getCommentAreas(data, '* @function ')),
+	  ...classifyNamedObjects(getCommentAreas(data, '* @alias '))
   ];
 
   // Collect all callback, typedef
@@ -114,6 +115,13 @@ function classifyNamedObjects(names) {
     //   result.push({ ...named, type: 'class' });
     // }
 
+    if (named.comment.includes(' @alias')) {
+		if (named.comment.includes(' @class')) {
+			named.comment.replace(/@alias/gim, '@name');
+	    } else continue;
+	    
+    }
+
     if (named.comment.includes(' @function') ||
         (
             named.comment.includes(' @name') &&
@@ -144,9 +152,11 @@ function applyMemberRoles(members) {
     const _member = { ...member }
 
     if (member.comment.includes(' @private')) {
-      _member.modifiers.push('private');
-    } else {
-      _member.modifiers.push('public');
+		_member.modifiers.push('private');
+    }else if (member.comment.includes(' @protected')) {
+		_member.modifiers.push('protected');
+	} else {
+		_member.modifiers.push('public');
     }
 
     if (
@@ -187,6 +197,7 @@ function collectExceptions(docs) {
 
     if (
       !comment.includes('* @name ') &&
+      !comment.includes('* @alias ') &&
       !comment.includes('* @typedef ') &&
       !comment.includes('* @callback ') &&
       !comment.includes('* @memberof ') &&
