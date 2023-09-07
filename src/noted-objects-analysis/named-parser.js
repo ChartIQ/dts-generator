@@ -52,7 +52,7 @@ function createClassesTSDefs(areas) {
     if (area.type === 'class') {
       const comment = area.comment;
       const { path, name, extending } = setClassDefinition(area);
-      const TSDef = [`${path.length === 0 ? 'export ' : ''}class ${name}${extending ? ' extends ' : ''}${extending}`];
+      const TSDef = [`${path.length === 0 ? 'export ' : ''}class ${name}${extending ? ` extends ${extending}` : ''}`];
 
       result.push({
         area,
