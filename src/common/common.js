@@ -152,7 +152,7 @@ function cleanCommentData(comment, skipAdditional = []) {
       continue;
 
     case str.includes('* @param') || str.includes("* @return"):
-      str.replace(/(\s?\{.*?\})/, '')
+      str.replace(/(\s?\{.*?\}(\s|$))/, '$2')
         .split(n)
         .map(m => ` ${m.trim()}`)
         .forEach(chunk => result.push(chunk))
