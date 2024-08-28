@@ -98,7 +98,12 @@ ${members.map(c => tabLines(c.code)).join('\n\n')}
     // remove statics
     if(
     	namespace === null &&
-    	members.filter(m => !m.area || !m.area.modifiers || m.area.modifiers.indexOf('static') === -1).length === 0
+    	members.filter(m =>
+			!m.area ||
+			!m.area.modifiers ||
+			m.area.modifiers.indexOf('static') === -1 ||
+			m.area.tsdeclarationOverwrite
+		).length === 0
     ){
     	continue;
     }
