@@ -391,7 +391,7 @@ function getTSDeclaration(comment) {
  * @returns {string} returns comment content without tsdeclaration part
  */
 function clearTSDeclaration(comment) {
-  re = / \* @tsdeclaration[\r\n]+( |\t)*\* ([\s\S]*?)(?= \*\/| \* @)/m;
+  const re = / \* @tsdeclaration[\r\n]+( |\t)*\* ([\s\S]*?)(?= \*\/| \* @)/m;
 
   return comment.replace(re, '');
 }
