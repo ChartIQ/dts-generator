@@ -5,8 +5,8 @@ module.exports = {
     return (
       data
         .replace(/CIQ\.ChartEngine\.AdvancedInjectable/gm, 'CIQ.ChartEngine')
-		.replace(/@tsmember/gm, '@memberof')
-		.replace(/@tsmodule/gm, '@module')
+        .replace(/@tsmember/gm, '@memberof')
+        .replace(/@tsmodule/gm, '@module')
         .replace(/@tsinterface/gm, '@typedef') // Process @tsinterface the same as @typedef but avoids inclusion in generated JS documentation
       );
   },
