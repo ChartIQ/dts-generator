@@ -51,14 +51,14 @@ const jsdoc = new RegExp(/@\w+\b/);
 const jsdocText = new RegExp(/@\w+\b.*/g);
 
 const isClassMethod = '(^\\s*(static|async|static async){0,1}\\s*\\w*\\s*\\()'; // prevent matching if statement "if (!x) x = {};"`
-const aFunction = '(function(\\s*[$0-9A-Za-z_]+)?\\s*\\(.*\\))';
-const anArrowFunction = '(\\(.*\\)\\s*\\s*=>)';
+const aFunction = '((^|(:|=)\\s*)function(\\s*[$0-9A-Za-z_]+)?\\s*\\(.*\\))';
+const anArrowFunction = '((:|=)\\s*(async)?\\s*\\(.*\\)\\s*\\s*=>)';
 
 /**
  * Regex that the will test if an expression is a function, arrow function, or function in class declaration.
  * Used to determine whether an expression is a function
  *
- * **NOTE** Will not detect  inline arrow functions
+ * **NOTE** Will not detect inline arrow functions
  * @type {RegExp}
  */
 const isFunction = new RegExp(`${isClassMethod}|${aFunction}|${anArrowFunction}`);
