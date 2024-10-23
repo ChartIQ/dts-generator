@@ -1,10 +1,10 @@
 {
   "name": "dts-gen",
-  "version": "1.5.6",
+  "version": "1.5.7",
   "description": "TSDeсGen is the script to convert some JSDoc to TS declarations",
   "main": "./src/index.js",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.17.0"
   },
   "scripts": {
     "example:simple": "node src/index.js -f examples/simple.js -t examples/simple.d.ts -c src/config.js",
