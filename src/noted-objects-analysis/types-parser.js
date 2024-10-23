@@ -145,6 +145,9 @@ function getProperties(comment) {
         [name, value] = name.split('=');
       }
 
+	  if (deconstruction[1] && deconstruction[1].indexOf("function" === 0)) {
+		name += deconstruction[1].replace(/function\s*(\(.*):/, "$1");
+	  }
       result.push({
         type,
         name,

@@ -8,7 +8,6 @@ const {
 		getDefinition,
 		getTSDeclaration,
 		clearTSDeclaration,
-		clearJScrambler,
 		isClassMethod
 	} = require('../common/common');
 
