@@ -247,7 +247,7 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
 
     tail = `(${outputParams(params)})`;
 
-    if (constructor === false && name !== 'constructor') {
+    if (constructor === false && name !== 'constructor' && name[0] !== 'constructor') {
       tail += `: ${returns}`;
     }
   } else
