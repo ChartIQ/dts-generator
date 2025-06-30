@@ -24,10 +24,10 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-	"@types/argv": "0.0.8",
-	"@types/lodash": "^4.17.19",
-	"@types/node": "^24.0.7",
-	"chai": "^4.5.0",
-	"mocha": "^10.8.0"
+    "@types/argv": "0.0.8",
+    "@types/lodash": "^4.17.19",
+    "@types/node": "^24.0.7",
+    "chai": "^4.5.0",
+    "mocha": "^10.8.0"
   }
 }
