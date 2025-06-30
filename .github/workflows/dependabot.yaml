@@ -16,7 +16,7 @@ jobs:
     steps:
       - shell: bash
         run: |
-          curl --location --request POST 'https://cosaic.kanbanize.com/index.php/api/kanbanize/create_new_task/format/json' \
+          curl --location --request POST 'https://chartiq.kanbanize.com/index.php/api/kanbanize/create_new_task/format/json' \
           --header 'apikey: ${{secrets.KANBANIZE_APIKEY}}' \
           --header 'Content-Type: application/json' \
           --data-raw '{
@@ -37,7 +37,7 @@ jobs:
     steps:
       - shell: bash
         run: |
-          curl --location --request POST 'https://cosaic.kanbanize.com/index.php/api/kanbanize/create_new_task/format/json' \
+          curl --location --request POST 'https://chartiq.kanbanize.com/index.php/api/kanbanize/create_new_task/format/json' \
           --header 'apikey: ${{secrets.KANBANIZE_APIKEY}}' \
           --header 'Content-Type: application/json' \
           --data-raw '{
