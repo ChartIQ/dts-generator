@@ -128,7 +128,7 @@ function getProperties(comment) {
       .substring(pos, nextPropertyIndex < 0 ? comment.length - 1 : nextPropertyIndex)
       .replace(/\n\s*\*\s*/g, "\n * ") // reduce whitespace around *
       .replace(/\s\*\s$/, ""); // remove last empty line
-    const deconstruction = /\{([^<]*?:)?(.*?)\}\s+(\[[\w\_=\'\"\s]+\]|[\w\_=\'\"]+)\s*([\s\S]*)/g.exec(propertyStr);
+    const deconstruction = /\{(.*?:)?(.*?)\}\s+(\[[\w\_=\'\"\s]+\]|[\w\_=\'\"]+)\s*([\s\S]*)/g.exec(propertyStr);
 
     if (deconstruction && deconstruction.length === 5) {
       const type = fixType(deconstruction[2].trim());
@@ -145,7 +145,7 @@ function getProperties(comment) {
         [name, value] = name.split('=');
       }
 
-	  if (deconstruction[1] && deconstruction[1].indexOf("function") === 0) {
+	  if (deconstruction[1] && deconstruction[1].indexOf("function" === 0)) {
 		name += deconstruction[1].replace(/function\s*(\(.*):/, "$1");
 	  }
       result.push({
