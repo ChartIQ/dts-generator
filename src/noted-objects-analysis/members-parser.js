@@ -238,7 +238,6 @@ function setMemberDefinitions(definition, comment, modifiers, constructor = fals
     const asyncRegex = /(?<![^\s(])async(?![^\s)])/; // check for async keyword by itself or within parentheses
 
     if (asyncRegex.test(definition) && !returns.includes("Promise")) {
-		console.log(definition)
       if (returns === "void") {
 		  returns = "Promise<void>";
 	  } else {
