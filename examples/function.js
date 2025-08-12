@@ -44,13 +44,12 @@ var Func4 = function(input) { return "hello!, " + input; }
 function $_Func5(input) { return "hello!, " + input; }
 
 /**
- * A simple function 6
- * @function Func6
- * @param {string} input input
- * @return {Promise<string>} output
- * @async
+ * A simple function 6 (test if async keyword gets flagged in a non-async function)
+ * @function $_Func6async
+ * @param {string} inputasync input
+ * @return {string} output
  */
-async function Func6(input) { return Promise("hello!, " + input); }
+function $_Func6async(inputasync) { return "hello!, " + inputasync; }
 
 /**
  * A simple function 7
@@ -59,5 +58,14 @@ async function Func6(input) { return Promise("hello!, " + input); }
  * @return {Promise<string>} output
  * @async
  */
-var Func7 = async function(input) { return Promise("hello!, " + input); }
+async function Func7(input) { return Promise("hello!, " + input); }
+
+/**
+ * A simple function 8
+ * @function Func8
+ * @param {string} input input
+ * @return {Promise<string>} output
+ * @async
+ */
+var Func8 = async function(input) { return Promise("hello!, " + input); }
 
