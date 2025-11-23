@@ -158,6 +158,13 @@ function cleanCommentData(comment, skipAdditional = []) {
         .forEach(chunk => result.push(chunk))
       break;
 
+    case str.includes('* @description'):
+      str.replace(' @description', '')
+        .split(n)
+        .map(m => ` ${m.trim()}`)
+        .forEach(chunk => result.push(chunk))
+      break;
+
     case str.includes('* @desc'):
       str.replace(' @desc', '')
         .split(n)

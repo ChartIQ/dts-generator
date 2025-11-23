@@ -125,13 +125,15 @@ describe('common.js', () => {
       expect(result).eql(target);
     });
 
-    it('remove @desc tag', () => {
+    it('remove @desc/@description tag', () => {
       const source =
 `/**
  * @desc has line
+ * @description has line
  */`;
       const target =
 `/**
+ * has line
  * has line
  */`;
 
